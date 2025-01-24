@@ -1,7 +1,9 @@
 // src/components/PemasokModal.js
-import React from 'react';
+import React, { useState } from 'react';
 
 const PemasokModal = ({ isOpen, onClose, onAddPemasok, pemasokData, setPemasokData }) => {
+  const [error, setError] = useState('');
+
   if (!isOpen) return null;
 
   const handleInputChange = (e) => {
@@ -9,10 +11,29 @@ const PemasokModal = ({ isOpen, onClose, onAddPemasok, pemasokData, setPemasokDa
     setPemasokData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = () => {
+    // Basic validation
+    if (
+      !pemasokData.nama_pemasok ||
+      !pemasokData.alamat ||
+      !pemasokData.telepon ||
+      !pemasokData.email
+    ) {
+      setError('All fields are required.');
+      return;
+    }
+
+    setError(''); // Clear any previous error
+    onAddPemasok(pemasokData);
+    setPemasokData({ nama_pemasok: '', alamat: '', telepon: '', email: '' }); // Reset fields
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-6 w-11/12 md:w-1/3">
         <h2 className="text-2xl font-semibold mb-4">Add New Supplier</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
         <div className="mb-4">
           <label className="block text-gray-700">Nama Pemasok</label>
           <input
@@ -60,7 +81,8 @@ const PemasokModal = ({ isOpen, onClose, onAddPemasok, pemasokData, setPemasokDa
         <div className="flex justify-between">
           <button
             onClick={() => {
-              onAddPemasok(pemasokData);
+              console.log('Submitted data:', pemasokData); // Log the submitted data
+              onAddPemasok(pemasokData); // Ensure pemasokData is structured correctly
               onClose();
             }}
             className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"

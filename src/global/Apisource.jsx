@@ -111,7 +111,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -127,7 +127,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -185,32 +185,41 @@ export class API_Source {
     }
   }
   static async postPemasok(nama_pemasok, alamat, telepon, email) {
-    try{
-    const response = await fetch(Endpoint.pemasok, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({
-        nama_pemasok,
-        alamat,
-        telepon,
-        email,
-      }),
-    });
-    if (!response) {
-      const errorData = await response.json();
-      throw new Error(errorData.payload.message);
+    try {
+      const response = await fetch(Endpoint.pemasok, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          nama_pemasok,
+          alamat,
+          telepon,
+          email,
+        }),
+      });      
+      console.log(
+        'body json: ',
+        JSON.stringify({
+          nama_pemasok,
+          alamat,
+          telepon,
+          email,
+        })
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.payload.message);
+      }
+      const data = await response.json();
+      return data.message;
+    } catch (error) {
+      console.error('Error posting pemasok:', error);
+      const errorData = error.message;
+      throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
-    const data = await response.json();
-    return data.message;
-  }catch (error) {
-    console.error('Error posting pemasok:', error);
-    const errorData = error.message;
-    throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
-  }
   }
   static async getDetailPemasok(id) {
     try {
@@ -275,7 +284,7 @@ export class API_Source {
         email,
       }),
     });
-    if (!response) {
+    if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.payload.message);
     }
@@ -394,7 +403,7 @@ export class API_Source {
       }),
     });
     console.log(response);
-    if (!response) {
+    if (!response.ok) {
       const errorData = await response.json();
       console.log(errorData.payload.message);
       throw new Error(errorData.payload.message);
@@ -424,6 +433,24 @@ export class API_Source {
       const errorData = error.message;
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
+  }
+  static async putPembelian(id, status){
+    const response = await fetch(Endpoint.detailPembelian(id), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.payload.message);
+    }
+    const data = await response.json();
+    return data.payload.data;
   }
   /* penjualn */
   static async getPenjualan() {
@@ -464,7 +491,7 @@ export class API_Source {
         metode_pembayaran,
       }),
     });
-    if (!response) {
+    if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.payload.message);
     }
@@ -479,7 +506,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -519,7 +546,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -555,7 +582,7 @@ export class API_Source {
         tanggal_masuk,
       }),
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       console.log('error', Errordata.payload.message);
       throw new Error(Errordata.payload.message);
@@ -572,7 +599,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -651,7 +678,7 @@ export class API_Source {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    if (!response) {
+    if (!response.ok) {
       const Errordata = await response.json();
       throw new Error(Errordata.payload.message);
     }
@@ -681,6 +708,4 @@ export class API_Source {
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
   }
-
-  
 }

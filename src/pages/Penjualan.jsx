@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { motion } from 'framer-motion';
+import { Table, Spin, Alert, Button, Input, Select, DatePicker } from 'antd'; // Import komponen dari Ant Design
 import { Link } from 'react-router-dom';
-import { FaShoppingCart, FaUser, FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa';
 import { formatPrice } from '../components/Rupiah';
 import PenjualanModal from '../components/ModalPenjual'; // Import modal
 import format from 'date-fns/format';
+import Swal from 'sweetalert2'; // Import SweetAlert2
+
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 export const Penjualan = () => {
   const [penjualanList, setPenjualanList] = useState([]); // Initialize as an empty array
   const [customerMap, setCustomerMap] = useState({});
   const [sparepartMap, setSparepartMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [penjualanData, setPenjualanData] = useState({
     id_sparepart: '',
@@ -21,6 +23,8 @@ export const Penjualan = () => {
     jumlah: '',
     metode_pembayaran: 'Tunai', // Default payment method
   });
+  const [searchTerm, setSearchTerm] = useState(''); // State for search input
+  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State for filter date range
 
   const fetchData = async () => {
     try {
@@ -45,7 +49,11 @@ export const Penjualan = () => {
       });
       setSparepartMap(sparepartMapping);
     } catch (error) {
-      setError(error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -56,123 +64,159 @@ export const Penjualan = () => {
   }, []);
 
   const handleAddPenjualan = async (data) => {
-    console.log('Adding sale:', data);
-    try {
-      const newPenjualan = await API_Source.postPenjualan(
-        data.id_sparepart,
-        data.id_customer,
-        data.tanggal,
-        data.jumlah,
-        data.metode_pembayaran
-      );
-      console.log('New Sale added:', newPenjualan);
-      fetchData(); // Refresh the list after adding
-      setPenjualanData({
-        id_sparepart: '',
-        id_customer: '',
-        tanggal: '',
-        jumlah: '',
-        metode_pembayaran: 'Tunai', // Reset to default
-      });
-    } catch (error) {
-      console.error('Error adding sale:', error);
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to add this sale?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, add it!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const newPenjualan = await API_Source.postPenjualan(
+          data.id_sparepart,
+          data.id_customer,
+          data.tanggal,
+          data.jumlah,
+          data.metode_pembayaran
+        );
+        console.log('New Sale added:', newPenjualan);
+        fetchData(); // Refresh the list after adding
+        setPenjualanData({
+          id_sparepart: '',
+          id_customer: '',
+          tanggal: '',
+          jumlah: '',
+          metode_pembayaran: 'Tunai', // Reset to default
+        });
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Sale added successfully!',
+        });
+      } catch (error) {
+        console.error('Error adding sale:', error.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message,
+        });
+      }
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <Spin size="large" tip="Loading..." />; // Menampilkan spinner loading dari Ant Design
   }
 
-  if (!penjualanList || penjualanList.length === 0) {
-    return (
-      <div className="container mx-auto p-4">
-        <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Penjualan</h1>
-        <div className="text-center text-gray-500">
-          <p>Tidak ada penjualan yang tersedia.</p>
-          <button
-            onClick={() => {
-              console.log('Opening modal...');
-              setModalOpen(true);
-            }}
-            className="mt-4 bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-          >
-            Add Sale
-          </button>
-        </div>
-        <PenjualanModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onAddPenjualan={handleAddPenjualan}
-          penjualanData={penjualanData}
-          setPenjualanData={setPenjualanData}
-          sparepartMap={sparepartMap}
-          customerMap={customerMap}
-        />
-      </div>
-    );
-  }
+  // Filter and sort the penjualanList based on search term and date range
+  const filteredPenjualanList = penjualanList
+    .filter((item) => {
+      const customerName = customerMap[item.id_customer] || '';
+      const sparepartName = sparepartMap[item.id_sparepart] || '';
+      return (
+        customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sparepartName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
+    .filter(item => {
+      if (!filterDateRange[0] || !filterDateRange[1]) return true; // If no date filter, show all
+      const itemDate = new Date(item.tanggal);
+      return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
+    })
+    .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)); // Sort by date descending
+
+  // Definisikan kolom untuk tabel
+  const columns = [
+    {
+      title: 'No',
+      key: 'index',
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Nama Customer',
+      dataIndex: 'id_customer',
+      key: 'id_customer',
+      render: (text) => customerMap[text] || 'Unknown Customer',
+    },
+    {
+      title: 'Nama Sparepart',
+      dataIndex: 'id_sparepart',
+      key: 'id_sparepart',
+      render: (text) => sparepartMap[text] || 'Unknown Sparepart',
+    },
+    {
+      title: 'Jumlah',
+      dataIndex: 'jumlah',
+      key: 'jumlah',
+      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
+    },
+    {
+      title: 'Tanggal',
+      dataIndex: 'tanggal',
+      key: 'tanggal',
+      render: (text) => format(new Date(text), 'dd/MM/yyyy'),
+    },
+    {
+      title: 'Total Harga',
+      dataIndex: 'total_harga',
+      key: 'total_harga',
+      render: (text) => formatPrice(text),
+    },
+    {
+      title: 'Metode Pembayaran',
+      dataIndex: 'metode_pembayaran',
+      key: 'metode_pembayaran',
+      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
+    },
+    {
+      title: 'Aksi',
+      key: 'action',
+      render: (text, record) => (
+        <Link to={`/penjualan/${record.id_penjualan}`} className="text-blue-600 underline hover:text-blue-800">Detail</Link>
+      ),
+    },
+  ];
 
   return (
-    <div className="container mx-auto p-4">
+    <div>
       <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Penjualan</h1>
-      <motion.ul
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {penjualanList.map((penjualan) => (
-          <motion.li
-            key={penjualan.id_penjualan}
-            className="bg-white shadow-lg rounded-lg p-6 flex flex-col"
-          >
-            <FaShoppingCart className="text-blue-500 mb-2" size={30} />
-            <div className="flex items-center mt-2">
-              <FaUser className="text-gray-500 mr-1" />
-              <p className="text-xl font-semibold">
-                Nama Customer: {customerMap[penjualan.id_customer] || 'Unknown Customer'}
-              </p>
-            </div>
-            <div className="flex items-center mt-2">
-              <FaUser className="text-gray-500 mr-1" />
-              <p className="text-xl font-semibold">
-                Nama Sparepart: {sparepartMap[penjualan.id_sparepart] || 'Unknown Sparepart'}
-              </p>
-            </div>
-            <div className="flex items-center mt-2">
-              <FaShoppingCart className="text-gray-500 mr-1" />
-              <p className="text-lg ">Jumlah: {penjualan.jumlah}</p>
-            </div>
-            <div className="flex items-center mt-2">
-              <FaCalendarAlt className="text-gray-500 mr-1" />
-              <p>Tanggal: {format(new Date(penjualan.tanggal), 'dd/MM/yyyy')}</p>
-            </div>
-            <div className="flex items-center mt-2">
-              <FaMoneyBillWave className="text-gray-500 mr-1" />
-              <p className="text-base font-bold text-green-600">
-                Total Harga: {formatPrice(penjualan.total_harga)}
-              </p>
-            </div>
-            <Link
-              to={`/penjualan/${penjualan.id_penjualan}`}
-              className="flex justify-center mt-4 text-blue-500 hover:underline text-lg"
-            >
-              Detail
-            </Link>
-          </motion.li>
-        ))}
-      </motion.ul>
-      <div className="mt-6">
-        <button
-          onClick={() => {
-            console.log('Opening modal...');
-            setModalOpen(true);
-          }}
-          className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-        >
-          Add Sale
-        </button>
-      </div>
+      <Input
+        placeholder="Search by Customer or Sparepart"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: 16 }}
+      />
+      <RangePicker
+        onChange={dates => setFilterDateRange(dates)}
+        format="DD/MM/YYYY"
+        style={{ marginBottom: 16 }}
+      />
+      {filteredPenjualanList.length > 0 ? (
+        <>
+          <Table
+            dataSource={filteredPenjualanList}
+            columns={columns}
+            rowKey="id_penjualan"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 'max-content' }}
+          />
+          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
+ <Button type="primary" onClick={() => setModalOpen(true)}>Add Sale</Button>
+          </div>
+        </>
+      ) : (
+        <Alert
+          message="Tidak ada penjualan"
+          description="Belum ada data penjualan yang tersedia."
+          type="info"
+          showIcon
+          style={{ marginTop: 16 }}
+        />
+      )}
       <PenjualanModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -185,3 +229,5 @@ export const Penjualan = () => {
     </div>
   );
 };
+
+export default Penjualan;

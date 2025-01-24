@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { motion } from 'framer-motion';
-import { FaWrench, FaMoneyBillWave, FaBox } from 'react-icons/fa';
+import { Table, Spin, Alert, Button, DatePicker } from 'antd'; // Mengimpor komponen dari Ant Design
+import { FaEdit } from 'react-icons/fa'; // Import ikon edit
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../components/Rupiah';
-import Modal from '../components/ModalSparepart'; // Import the Modal component
-import EditSparepartModal from '../components/EditSparepartModal'; // Import the edit modal component
+import Modal from '../components/ModalSparepart';
+import EditSparepartModal from '../components/EditSparepartModal';
 import format from 'date-fns/format';
+import Swal from 'sweetalert2'; // Import SweetAlert2
+
+const { RangePicker } = DatePicker;
 
 export const Sparepart = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -22,25 +25,28 @@ export const Sparepart = () => {
   });
   const [editSparepartData, setEditSparepartData] = useState(null);
   const [sparepartList, setSparepartList] = useState([]);
-  const [kategoriList, setKategoriList] = useState([]); // Initialize kategoriList
+  const [kategoriList, setKategoriList] = useState([]);
   const [pemasokList, setPemasokList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State untuk rentang tanggal
 
-  // Fetch spare parts, categories, and suppliers using useEffect
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const spareparts = await API_Source.getSparepart();
-        const categories = await API_Source.getKategori(); // Fetch categories
+        const categories = await API_Source.getKategori();
         const suppliers = await API_Source.getPemasok();
+        
+        // Mengurutkan spareparts berdasarkan tanggal masuk terbaru hingga terlama
+        spareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
 
         setSparepartList(spareparts);
-        setKategoriList(categories); // Set kategoriList
+        setKategoriList(categories);
         setPemasokList(suppliers);
       } catch (err) {
-        setError(err.message);
+        Swal.fire('Error!', 'Failed to fetch data. Please try again later.', 'error');
       } finally {
         setLoading(false);
       }
@@ -72,12 +78,13 @@ export const Sparepart = () => {
         selectedKategori: '',
         selectedPemasok: '',
       });
-      // Optionally, you can refetch the spare parts after adding a new one
       const updatedSpareparts = await API_Source.getSparepart();
+      // Mengurutkan spareparts setelah penambahan
+      updatedSpareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
       setSparepartList(updatedSpareparts);
     } catch (error) {
-      console.error('Error adding sparepart:', error);
-      setError('Failed to add spare part. Please check your input.'); // Set error message
+      console.error('Error adding sparepart:', error.message);
+      Swal.fire('Error!', error.message || 'Gagal menambahkan sparepart.', 'error');
     }
   };
 
@@ -94,142 +101,191 @@ export const Sparepart = () => {
         data.deskripsi,
         data.tanggal_masuk
       );
-      alert('Sparepart updated successfully!');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Sparepart updated successfully!',
+      });
       setEditModalOpen(false);
-      // Refetch the spare parts after updating
       const updatedSpareparts = await API_Source.getSparepart();
+      // Mengurutkan spareparts setelah pembaruan
+      updatedSpareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
       setSparepartList(updatedSpareparts);
     } catch (error) {
-      console.error('Error updating sparepart:', error);
-      setError('Failed to update spare part. Please check your input.'); // Set error message
+      console.error('Error updating sparepart:', error.message);
+      Swal.fire('Error!', error.message || 'Gagal memperbarui sparepart.', 'error');
     }
   };
 
+  const confirmAddSparepart = async (data) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to add this spare part?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, add it!',
+      cancelButtonText: 'No, cancel!',
+    });
+
+    if (result.isConfirmed) {
+      await handleAddSparepart(data);
+    }
+  };
+
+  const confirmUpdateSparepart = async (data) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to update this spare part?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, update it!',
+      cancelButtonText: 'No, cancel!',
+    });
+
+    if (result.isConfirmed) {
+      await handleUpdateSparepart(data);
+    }
+  };
+
+  // Filter spare parts based on the search term and date range
+  const filteredSpareparts = sparepartList.filter(sparepart => {
+    const isWithinDateRange = () => {
+      if (!filterDateRange[0] || !filterDateRange[1]) return true; // Jika tidak ada filter tanggal, tampilkan semua
+      const itemDate = new Date(sparepart.tanggal_masuk);
+      return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
+    };
+
+    return (
+      sparepart.nama_sparepart.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      isWithinDateRange()
+    );
+  });
+
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <Spin size="large" tip="Loading..." />; // Menampilkan spinner loading dari Ant Design
   }
 
-  
-  
-return (
-  <div className="container mx-auto p-4">
-    <h1 className="text-4xl font-bold text-center mb-6 text-blue-600">Daftar Sparepart</h1>
-    {loading ? (
-      <div className="flex justify-center items-center h-screen">Loading...</div>
-    ) : sparepartList && sparepartList.length > 0 ? (
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {sparepartList.map((sparepart) => {
-          const marginPercentage =
-            sparepart.harga_jual && sparepart.harga
-              ? ((sparepart.harga_jual - sparepart.harga) / sparepart.harga_jual) * 100
-              : 0;
-
-          return (
-            <motion.div
-              className="bg-white shadow-lg rounded-lg p-6 flex flex-col transition-transform transform"
-              key={sparepart.id_sparepart}
-            >
-              <div className="flex items-center mb-2">
-                <FaWrench className="text-blue-500 mr-2" size={24} />
-                <Link to={`${sparepart.id_sparepart}`} className="text-xl font-semibold">
-                  {sparepart.nama_sparepart}
-                </Link>
-              </div>
-              <p className="text-gray-600">{sparepart.deskripsi}</p>
-              <div className="flex items-center mt-2">
-                <FaMoneyBillWave className="text-gray-500 mr-1" />
-                <p className="text-lg font-bold text-green-600">
-                  Harga: {formatPrice(sparepart.harga)}
-                </p>
-              </div>
-              <div className="flex items-center mt-2">
-                <FaMoneyBillWave className="text-gray-500 mr-1" />
-                <p className="text-lg font-bold text-green-600">
-                  Harga Jual: {formatPrice(sparepart.harga_jual)}
-                </p>
-              </div>
-              <div className="flex items-center mt-2">
-                <FaMoneyBillWave className="text-gray-500 mr-1" />
-                <p className="text-lg font-bold text-red-600">
-                  Margin: {marginPercentage.toFixed()}%
-                </p>
-              </div>
-              <div className="flex items-center mt-2">
-                <FaBox className="text-gray-500 mr-1" />
-                <p>Stok: {sparepart.stok}</p>
-              </div>
-              <p className="text-sm text-gray-500">
-                Tanggal Masuk: {format(new Date(sparepart.tanggal_masuk), 'dd/MM/yyyy')}
-              </p>
-              <div className="flex justify-between mt-4">
-                <Link
-                  to={`/sparepart/${sparepart.id_sparepart}`}
-                  className="flex justify-center text-blue-500 hover:underline text-sm"
-                >
-                  Detail
-                </Link>
-                <button
-                  onClick={() => {
-                    setEditSparepartData(sparepart);
-                    setEditModalOpen(true);
-                  }}
-                  className="text-red-500 hover:underline text-sm"
-                >
-                  Edit
-                </button>
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-    ) : (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">Tidak ada data</h1>
-          <p className="text-gray-600">Silakan tambahkan data sparepart.</p>
-          <div className="mt-6">
-            <button
-              onClick={() => setModalOpen(true)}
-              className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-            >
-              Add Sparepart
-            </button>
-          </div>
+  // Definisikan kolom untuk tabel
+  const columns = [
+    {
+      title: 'No',
+      key: 'index',
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Nama Sparepart',
+      dataIndex: 'nama_sparepart',
+      key: 'nama_sparepart',
+      render: (text, record) => (
+        <Link to={`/sparepart/${record.id_sparepart}`} className="text-blue-600 font-bold underline">
+          {text}
+        </Link>
+      ),
+    },
+    {
+      title: 'Deskripsi',
+      dataIndex: 'deskripsi',
+      key: 'deskripsi',
+    },
+    {
+      title: 'Harga',
+      dataIndex: 'harga',
+      key: 'harga',
+      render: (text) => formatPrice(text),
+    },
+    {
+      title: 'Harga Jual',
+      dataIndex: 'harga_jual',
+      key: 'harga_jual',
+      render: (text) => formatPrice(text),
+    },
+    {
+      title: 'Stok',
+      dataIndex: 'stok',
+      key: 'stok',
+      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
+    },
+    {
+      title: 'Tanggal Masuk',
+      dataIndex: 'tanggal_masuk',
+      key: 'tanggal_masuk',
+      render: (text) => format(new Date(text), 'dd/MM/yyyy'),
+    },
+    {
+      title: 'Aksi',
+      key: 'action',
+      render: (text, record) => (
+        <div>
+          <Button
+            type="link"
+            onClick={() => {
+              setEditSparepartData(record);
+              setEditModalOpen(true);
+            }}
+          >
+            <FaEdit className="text-blue-500" />
+          </Button>
         </div>
-      </div>
-    )}
-    {error && <div className="text-red-500 text-center mt-4">{error}</div>}
-    <div className="mt-6">
-      <button
-        onClick={() => setModalOpen(true)}
-        className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-      >
-        Add Sparepart
-      </button>
-    </div>
+      ),
+    },
+  ];
 
-    <Modal
-      isOpen={modalOpen}
-      onClose={() => setModalOpen(false)}
-      onAddSparepart={handleAddSparepart}
-      sparepartData={{ ...sparepartData, kategoriList, pemasokList }}
-      setSparepartData={setSparepartData}
-    />
-    <EditSparepartModal
-      isOpen={editModalOpen}
-      onClose={() => setEditModalOpen(false)}
-      onUpdateSparepart={handleUpdateSparepart}
-      sparepartData={editSparepartData}
-      kategoriList={kategoriList} // Pass kategoriList to the modal
-      pemasokList={pemasokList} // Pass pemasokList to the modal
-    />
-  </div>
-);
+  return (
+    <div>
+      <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Sparepart</h1>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search Sparepart..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border rounded p-2 w-full"
+        />
+        <RangePicker
+          onChange={dates => setFilterDateRange(dates)}
+          format="DD/MM/YYYY"
+          style={{ marginTop: 16, width: '20%' }}
+        />
+      </div>
+      {filteredSpareparts.length > 0 ? (
+        <>
+          <Table
+            dataSource={filteredSpareparts}
+            columns={columns}
+            rowKey="id_sparepart"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 'max-content' }}
+          />
+          <div style={{ marginTop: 16 }}>
+            <Button type="primary" onClick={() => setModalOpen(true)}>Add Sparepart</Button>
+          </div>
+        </>
+      ) : (
+        <Alert
+          message="Tidak ada sparepart"
+          description="Belum ada data sparepart yang tersedia."
+          type="info"
+          showIcon
+          style={{ marginTop: 16 }}
+        />
+      )}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onAddSparepart={confirmAddSparepart}
+        sparepartData={{ ...sparepartData, kategoriList, pemasokList }}
+        setSparepartData={setSparepartData}
+      />
+      <EditSparepartModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onUpdateSparepart={confirmUpdateSparepart}
+        sparepartData={editSparepartData}
+        kategoriList={kategoriList}
+        pemasokList={pemasokList}
+      />
+    </div>
+  );
 };
 
 export default Sparepart;

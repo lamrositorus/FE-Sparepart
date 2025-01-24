@@ -117,10 +117,10 @@ export const Signup = () => {
             {mutation.isLoading ? 'Signing up...' : 'Sign Up'}
           </Button>
           {mutation.isError && (
-                      <Alert severity="error" sx={{ mt: 2 }}>
-                        Error: {mutation.error}
-                      </Alert>
-                    )}
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Error: {mutation.error}
+            </Alert>
+          )}
         </Box>
         <Typography variant="body2" sx={{ mt: 2 }}>
           Do you have an account? <Link to="/user/login">Sign Up</Link>

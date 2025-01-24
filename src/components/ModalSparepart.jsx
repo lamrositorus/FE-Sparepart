@@ -69,36 +69,34 @@ const Modal = ({ isOpen, onClose, onAddSparepart, sparepartData, setSparepartDat
         <div className="mb-4">
           <label className="block text-gray-700">Kategori</label>
           <select
-  name="selectedKategori"
-  value={sparepartData.selectedKategori}
-  onChange={handleInputChange}
-  className="border rounded p-2 w-full"
->
-  <option value="">Select category</option>
-  {(sparepartData.kategoriList || []).map((kategori) => (
-    <option key={kategori.id_kategori} value={kategori.id_kategori}>
-      {kategori.nama_kategori}
-    </option>
-  ))}
-</select>
-
+            name="selectedKategori"
+            value={sparepartData.selectedKategori}
+            onChange={handleInputChange}
+            className="border rounded p-2 w-full"
+          >
+            <option value="">Select category</option>
+            {(sparepartData.kategoriList || []).map((kategori) => (
+              <option key={kategori.id_kategori} value={kategori.id_kategori}>
+                {kategori.nama_kategori}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="mb-4">
           <label className="block text-gray-700">Pemasok</label>
           <select
-  name="selectedPemasok"
-  value={sparepartData.selectedPemasok}
-  onChange={handleInputChange}
-  className="border rounded p-2 w-full"
->
-  <option value="">Select supplier</option>
-  {(sparepartData.pemasokList || []).map((pemasok) => (
-    <option key={pemasok.id_pemasok} value={pemasok.id_pemasok}>
-      {pemasok.nama_pemasok}
-    </option>
-  ))}
-</select>
-
+            name="selectedPemasok"
+            value={sparepartData.selectedPemasok}
+            onChange={handleInputChange}
+            className="border rounded p-2 w-full"
+          >
+            <option value="">Select supplier</option>
+            {(sparepartData.pemasokList || []).map((pemasok) => (
+              <option key={pemasok.id_pemasok} value={pemasok.id_pemasok}>
+                {pemasok.nama_pemasok}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex justify-between">
           <button

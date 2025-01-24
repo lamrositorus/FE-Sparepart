@@ -19,6 +19,6 @@ export const Endpoint = {
   sparepart: `${CONFIG.API_URL}/sparepart`,
   detailSparepart: (id) => `${CONFIG.API_URL}/sparepart/${id}`,
 
-  historyPenjualan : `${CONFIG.API_URL}/historypenjualan`,
-  historyPembelian : `${CONFIG.API_URL}/historypembelian`
+  historyPenjualan: `${CONFIG.API_URL}/historypenjualan`,
+  historyPembelian: `${CONFIG.API_URL}/historypembelian`,
 };

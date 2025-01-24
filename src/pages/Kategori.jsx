@@ -7,6 +7,7 @@ import EditKategoriModal from '../components/EditKategoriModal';
 import { useQuery } from '@tanstack/react-query';
 import format from 'date-fns/format';
 import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 export const Kategori = () => {
   const [kategoriData, setKategoriData] = useState({
@@ -36,22 +37,49 @@ export const Kategori = () => {
 
   const handleAddKategori = async (data) => {
     try {
-      await API_Source.postKategori(data.nama_kategori, data.deskripsi);
-      setKategoriData({ nama_kategori: '', deskripsi: '' });
-      refetch();
+      const confirmResult = await Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: 'Data kategori akan ditambahkan.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Tambahkan!',
+      });
+
+      if (confirmResult.isConfirmed) {
+        await API_Source.postKategori(data.nama_kategori, data.deskripsi);
+        Swal.fire('Berhasil!', 'Kategori berhasil ditambahkan.', 'success');
+        setKategoriData({ nama_kategori: '', deskripsi: '' });
+        refetch();
+      }
     } catch (error) {
       console.error('Error adding category:', error.message);
+      Swal.fire('Error!', error.message || 'Gagal menambahkan kategori.', 'error');
     }
   };
 
   const handleUpdateKategori = async ({ id, nama_kategori, deskripsi }) => {
     try {
-      await API_Source.updatedKategori(id, nama_kategori, deskripsi);
-      alert('Category updated successfully!');
-      setEditModalOpen(false);
-      refetch();
+      const confirmResult = await Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: 'Data kategori akan diperbarui.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Perbarui!',
+      });
+
+      if (confirmResult.isConfirmed) {
+        await API_Source.updatedKategori(id, nama_kategori, deskripsi);
+        Swal.fire('Berhasil!', 'Kategori berhasil diperbarui.', 'success');
+        setEditModalOpen(false);
+        refetch();
+      }
     } catch (error) {
       console.error('Error updating category:', error.message);
+      Swal.fire('Error!', error.message || 'Gagal memperbarui kategori.', 'error');
     }
   };
 
@@ -137,9 +165,11 @@ export const Kategori = () => {
         onUpdateKategori={handleUpdateKategori}
         kategoriData={editKategoriData}
       />
-      {kategoriError && <div className="text-red-500 mt-4">{kategoriError.message}</div>}
+      {kategoriError && (
+        <div className="text-red-500 mt-4">
+          Error: {kategoriError.message || 'Gagal memuat kategori.'}
+        </div>
+      )}
     </div>
   );
 };
-
-

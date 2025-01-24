@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
 import { motion } from 'framer-motion';
-import { FaUser, FaMapMarkedAlt, FaPhone, FaEnvelope, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaUser , FaMapMarkedAlt, FaPhone, FaEnvelope, FaTrash, FaEdit } from 'react-icons/fa';
 import CustomerModal from '../components/ModalCustomer'; // Import the modal component
 import EditCustomerModal from '../components/EditCustomerModal'; // Import the edit modal component
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 export const Customer = () => {
   const [customerList, setCustomerList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false); // State for edit modal
   const [customerData, setCustomerData] = useState({
@@ -25,7 +25,12 @@ export const Customer = () => {
       const data = await API_Source.getCustomer();
       setCustomerList(data || []); // Ensure we set it to an empty array if null
     } catch (error) {
-      setError(error.message);
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to fetch customers. Please try again later.',
+      });
     } finally {
       setLoading(false);
     }
@@ -54,8 +59,18 @@ export const Customer = () => {
         telepon: '',
         email: '',
       });
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Customer added successfully!',
+      });
     } catch (error) {
-      console.error('Error adding customer:', error);
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to add customer. Please try again later.',
+      });
     }
   };
 
@@ -73,22 +88,46 @@ export const Customer = () => {
         telepon: '',
         email: '',
       });
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Customer updated successfully!',
+      });
     } catch (error) {
-      console.error('Error updating customer:', error);
-      setError(error); // Set error message if needed
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to update customer. Please try again later.',
+      });
     }
   };
 
   // Function to delete a customer
   const handleDeleteCustomer = async (id) => {
-    if (window.confirm('Are you sure you want to delete this customer?')) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will not be able to recover this customer!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (result.isConfirmed) {
       try {
         await API_Source.deleteCustomer(id);
         console.log('Customer deleted:', id);
         fetchCustomers(); // Refresh the list after deletion
+        Swal.fire('Deleted!', 'The customer has been deleted.', 'success');
       } catch (error) {
-        console.error('Error deleting customer:', error);
-        setError(error); // Set error message if needed
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'Failed to delete customer. Please try again later.',
+        });
       }
     }
   };
@@ -104,11 +143,6 @@ export const Customer = () => {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen text-red-500">Error: {error}</div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4">
@@ -135,7 +169,7 @@ export const Customer = () => {
               key={customer.id_customer}
               className="bg-white shadow-lg rounded-lg p-6 flex flex-col transition-transform transform"
             >
-              <FaUser className="text-blue-500 mb-2" size={30} />
+              <FaUser  className="text-blue-500 mb-2" size={30} />
               <h2 className="text-xl font-semibold">{customer.nama_customer}</h2>
               <div className="flex items-center mt-2">
                 <FaMapMarkedAlt className="text-gray-500 mr-1" />

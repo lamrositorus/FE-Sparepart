@@ -90,7 +90,7 @@ const PembelianModal = ({
           <button
             onClick={() => {
               onAddPembelian(pembelianData);
-              console.log('onAddpembelian: ',pembelianData);
+              console.log('onAddpembelian: ', pembelianData);
               onClose();
             }}
             className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
