@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { FaTags } from 'react-icons/fa';
 import KategoriModal from '../components/ModalKategori';
 import EditKategoriModal from '../components/EditKategoriModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useQuery } from '@tanstack/react-query';
 import format from 'date-fns/format';
 import { Link } from 'react-router-dom';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for toast notifications
 
 export const Kategori = () => {
   const [kategoriData, setKategoriData] = useState({
@@ -17,8 +19,10 @@ export const Kategori = () => {
   const [editKategoriData, setEditKategoriData] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [actionType, setActionType] = useState('');
+  const [kategoriToDelete, setKategoriToDelete] = useState(null);
 
-  // Fetch categories using TanStack Query
   const {
     data: kategoriList = [],
     error: kategoriError,
@@ -31,145 +35,160 @@ export const Kategori = () => {
 
   useEffect(() => {
     if (kategoriError) {
-      console.error('Error fetching categories:', kategoriError.message);
+      console.error('Error fetching categories:', kategoriError);
+      toast.error(kategoriError.message || 'Gagal memuat kategori.'); // Use toast for error
     }
   }, [kategoriError]);
 
-  const handleAddKategori = async (data) => {
-    try {
-      const confirmResult = await Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: 'Data kategori akan ditambahkan.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Tambahkan!',
-      });
+  const handleAddKategori = () => {
+    setActionType('add');
+    setConfirmModalOpen(true);
+  };
 
-      if (confirmResult.isConfirmed) {
-        await API_Source.postKategori(data.nama_kategori, data.deskripsi);
-        Swal.fire('Berhasil!', 'Kategori berhasil ditambahkan.', 'success');
-        setKategoriData({ nama_kategori: '', deskripsi: '' });
-        refetch();
-      }
+  const handleUpdateKategori = () => {
+    setActionType('update');
+    setConfirmModalOpen(true);
+  };
+
+  const confirmAddKategori = async () => {
+    try {
+      await API_Source.postKategori(kategoriData.nama_kategori, kategoriData.deskripsi);
+      toast.success('Kategori berhasil ditambahkan.'); // Use toast for success
+      setKategoriData({ nama_kategori: '', deskripsi: '' });
+      setConfirmModalOpen(false);
+      refetch();
     } catch (error) {
-      console.error('Error adding category:', error.message);
-      Swal.fire('Error!', error.message || 'Gagal menambahkan kategori.', 'error');
+      console.error('Error adding category:', error);
+      toast.error(error || 'Gagal menambahkan kategori.'); // Use toast for error
     }
   };
 
-  const handleUpdateKategori = async ({ id, nama_kategori, deskripsi }) => {
+  const confirmUpdateKategori = async () => {
     try {
-      const confirmResult = await Swal.fire({
-        title: 'Apakah Anda yakin?',
-        text: 'Data kategori akan diperbarui.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Perbarui!',
-      });
-
-      if (confirmResult.isConfirmed) {
-        await API_Source.updatedKategori(id, nama_kategori, deskripsi);
-        Swal.fire('Berhasil!', 'Kategori berhasil diperbarui.', 'success');
-        setEditModalOpen(false);
-        refetch();
-      }
+      await API_Source.updatedKategori(editKategoriData.id_kategori, editKategoriData.nama_kategori, editKategoriData.deskripsi);
+      toast.success('Kategori berhasil diperbarui.'); // Use toast for success
+      setEditModalOpen(false);
+      setConfirmModalOpen(false);
+      refetch();
     } catch (error) {
-      console.error('Error updating category:', error.message);
-      Swal.fire('Error!', error.message || 'Gagal memperbarui kategori.', 'error');
+      console.error('Error updating category:', error);
+      toast.error(error || 'Gagal memperbarui kategori.'); // Use toast for error
     }
+  };
+
+  const handleDeleteKategori = async () => {
+    try {
+      await API_Source.deleteKategori(kategoriToDelete.id_kategori);
+      toast.success('Kategori berhasil dihapus.'); // Use toast for success
+      setConfirmModalOpen(false);
+      refetch();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error(error || 'Gagal menghapus kategori.'); // Use toast for error
+    }
+  };
+
+  const openAddModal = () => {
+    setModalOpen(true);
+  };
+
+  const openEditModal = (kategori) => {
+    setEditKategoriData(kategori);
+    setEditModalOpen(true);
+  };
+
+  const openDeleteModal = (kategori) => {
+    setKategoriToDelete(kategori);
+    setActionType('delete');
+    setConfirmModalOpen(true);
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold text-center mb-6 text-blue-600">Kategori</h1>
-      {isLoading ? (
-        <div className="flex justify-center items-center h-screen">Loading...</div>
-      ) : kategoriList && kategoriList.length > 0 ? (
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-blue-600">Kategori</h1>
+        <button className="btn btn-primary text-white" onClick={openAddModal}>
+          Tambah Kategori
+        </button>
+      </div>
+
+      {kategoriList.length > 0 ? (
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           {kategoriList.map((kategori) => (
             <motion.div
-              className="bg-white shadow-lg rounded-lg p-6 flex flex-col"
+              className="card bg-base-100 shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300"
               key={kategori.id_kategori}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: 'spring', stiffness: 300 }}
             >
               <div className="flex items-center mb-2">
                 <FaTags className="text-blue-500 mr-2" size={24} />
                 <h2 className="text-xl font-semibold">{kategori.nama_kategori}</h2>
               </div>
               <p className="text-gray-600">{kategori.deskripsi}</p>
-              <p className="text-sm text-gray-500">
-                Dibuat Pada: {format(new Date(kategori.created_at), 'dd/MM/yyyy')}
-              </p>
+              <p className="text-sm text-gray-500">Dibuat Pada: {format(new Date(kategori.created_at), 'dd/MM/yyyy')}</p>
               <div className="flex justify-between mt-4">
-                <Link
-                  to={`/kategori/${kategori.id_kategori}`}
-                  className="text-blue-500 hover:underline text-sm"
-                >
+                <Link to={`/kategori/${kategori.id_kategori}`} className="link link-primary text-sm">
                   Detail
                 </Link>
                 <button
-                  onClick={() => {
-                    setEditKategoriData(kategori);
-                    setEditModalOpen(true);
-                  }}
-                  className="text-red-500 hover:underline text-sm"
+                  onClick={() => openEditModal(kategori)}
+                  className="link link-error text-sm"
                 >
                   Edit
+                </button>
+                <button
+                  onClick={() => openDeleteModal(kategori)}
+                  className="link link-error text-sm"
+                >
+                  Hapus
                 </button>
               </div>
             </motion.div>
           ))}
         </motion.div>
       ) : (
-        <div className="flex justify-center items-center h-screen">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Kategori</h1>
-            <p className="text-gray-600">Belum ada data kategori.</p>
-            <button
-              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={() => setModalOpen(true)}
-            >
-              Tambah Kategori
-            </button>
-          </div>
+        <div className="flex flex-col items-center text-center">
+          <img src="/empty-state.svg" alt="No data" className="w-48 h-48 mb-4" />
+          <h2 className="text-2xl font-bold">Belum ada data kategori.</h2>
         </div>
       )}
-      <button
-        onClick={() => setModalOpen(true)}
-        className="mt-6 bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-      >
-        Tambah Kategori
-      </button>
       <KategoriModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAddKategori={handleAddKategori}
+        onAddKategori={handleAddKategori} // This will just open the modal
         kategoriData={kategoriData}
         setKategoriData={setKategoriData}
       />
       <EditKategoriModal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        onUpdateKategori={handleUpdateKategori}
+        onUpdateKategori={handleUpdateKategori} // This will just open the modal
         kategoriData={editKategoriData}
       />
-      {kategoriError && (
-        <div className="text-red-500 mt-4">
-          Error: {kategoriError.message || 'Gagal memuat kategori.'}
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={actionType === 'add' ? confirmAddKategori : actionType === 'update' ? confirmUpdateKategori : handleDeleteKategori}
+        message={actionType === 'delete' ? `Apakah Anda yakin ingin menghapus kategori "${kategoriToDelete?.nama_kategori}"?` : 
+          actionType === 'update' ? 
+          `Apakah Anda yakin ingin memperbarui kategori "${editKategoriData?.nama_kategori}"?` : 
+          `Apakah Anda yakin ingin menambahkan kategori "${kategoriData.nama_kategori}"?`}
+      />
+      <ToastContainer /> {/* Add ToastContainer to render the toasts */}
     </div>
   );
 };

@@ -12,3 +12,4 @@ export * from './DetailKategori';
 export * from './DetailPembelian';
 export * from './HistoryPenjualan';
 export * from './HistoryPembelian';
+export * from './Profile';

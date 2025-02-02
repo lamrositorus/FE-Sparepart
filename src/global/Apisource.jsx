@@ -55,6 +55,30 @@ export class API_Source {
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
   }
+  static async getUserProfil(userId) {
+    try {
+      const response = await fetch(Endpoint.profile(userId), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Error: ${response.status} - ${errorData.payload.message}`); // Tampilkan status dan respons
+        
+      }
+      const data = await response.json();
+      console.log('User profile data:', data);
+      return data.payload.data; // Mengembalikan data dari respons
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      const errorData = error.message;
+      throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
+    }
+  }
 
   /* kategori */
   static async getKategori() {
@@ -199,7 +223,7 @@ export class API_Source {
           telepon,
           email,
         }),
-      });      
+      });
       console.log(
         'body json: ',
         JSON.stringify({
@@ -211,6 +235,8 @@ export class API_Source {
       );
       if (!response.ok) {
         const errorData = await response.json();
+        const errorMessage = errorData?.payload?.message || 'An error occurred';
+
         throw new Error(errorData.payload.message);
       }
       const data = await response.json();
@@ -434,7 +460,7 @@ export class API_Source {
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
   }
-  static async putPembelian(id, status){
+  static async putPembelian(id, status) {
     const response = await fetch(Endpoint.detailPembelian(id), {
       method: 'PUT',
       headers: {
@@ -471,6 +497,27 @@ export class API_Source {
       return data.payload.data; // Mengembalikan data dari respons
     } catch (error) {
       console.error('Error fetching penjualan:', error);
+      const errorData = error.message;
+      throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
+    }
+  }
+  static async getStatistics() {
+    try {
+      const response = await fetch(Endpoint.stats, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.payload.message);
+      }
+      const data = await response.json();
+      return data.payload.data; // Mengembalikan data dari respons
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
       const errorData = error.message;
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
@@ -527,7 +574,9 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const errorMessage =
+          errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);
       }
       const data = await response.json();
       console.log('Sparepart data:', data);

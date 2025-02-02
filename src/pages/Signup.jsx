@@ -2,18 +2,9 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { API_Source } from '../global/Apisource';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Alert,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ShowPassword from '../components/ShowPassword';
 
 export const Signup = () => {
   const [username, setUsername] = useState('');
@@ -40,92 +31,68 @@ export const Signup = () => {
   };
 
   return (
-    <Container
-      component="main"
-      maxWidth="xs"
-      sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: 4,
-          borderRadius: 2,
-          boxShadow: 3,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)', // Slightly transparent white background
-        }}
-      >
-        <Typography component="h1" variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-          Create an Account
-        </Typography>
-        <Box component="form" onSubmit={handleSignup} sx={{ width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoFocus
-            variant="outlined"
-            sx={{ borderRadius: 2 }}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            variant="outlined"
-            sx={{ borderRadius: 2 }}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            variant="outlined"
-            sx={{ borderRadius: 2 }}
-          />
-          <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
-            <InputLabel id="role-label">Role</InputLabel>
-            <Select
-              labelId="role-label"
+    <div className="flex items-center justify-center min-h-screen ">
+      <ToastContainer />
+      <div className="w-full max-w-md p-6  rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center mb-4">Create an Account</h1>
+        <p className="text-center mb-6">Please fill in the form to create an account</p>
+        <form onSubmit={handleSignup}>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Username"
+              className="input input-bordered w-full"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="email"
+              placeholder="Email"
+              className="input input-bordered w-full"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <ShowPassword
+              label="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <select
+              className="select select-bordered w-full"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              label="Role"
               required
             >
-              <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="Staff">Staff</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
+              <option value="Admin">Admin</option>
+              <option value="Staff">Staff</option>
+            </select>
+          </div>
+          <button
             type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            sx={{ mt: 3, mb: 2, borderRadius: 2 }}
+            className={`btn btn-primary w-full ${mutation.isLoading ? 'loading' : ''}`}
             disabled={mutation.isLoading}
           >
             {mutation.isLoading ? 'Signing up...' : 'Sign Up'}
-          </Button>
+          </button>
           {mutation.isError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              Error: {mutation.error}
-            </Alert>
+            <div className="mt-4">
+              <div className="alert alert-error">{mutation.error.message}</div>
+            </div>
           )}
-        </Box>
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          Do you have an account? <Link to="/user/login">Sign Up</Link>
-        </Typography>
-      </Box>
-    </Container>
+        </form>
+        <p className="text-center mt-4">
+          Do you have an account? <Link to="/user/login" className="text-blue-500">Login</Link>
+        </p>
+      </div>
+    </div>
   );
 };

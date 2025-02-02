@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { Table, Spin, Alert, Button, DatePicker } from 'antd'; // Mengimpor komponen dari Ant Design
-import { FaEdit } from 'react-icons/fa'; // Import ikon edit
+import { Spin, Alert, Button } from 'antd';
+import { FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../components/Rupiah';
 import Modal from '../components/ModalSparepart';
 import EditSparepartModal from '../components/EditSparepartModal';
 import format from 'date-fns/format';
-import Swal from 'sweetalert2'; // Import SweetAlert2
-
-const { RangePicker } = DatePicker;
+import Swal from 'sweetalert2';
+import DateFilter from '../components/DateFilter';
+import SearchFilter from '../components/SearchFilterSparepart';
+import SelectFilter from '../components/SelectFilter';
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for toast notifications
+import ConfirmationModal from '../components/ConfirmationModal'; // Import the ConfirmationModal
 
 export const Sparepart = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -29,7 +33,10 @@ export const Sparepart = () => {
   const [pemasokList, setPemasokList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State untuk rentang tanggal
+  const [filterDateRange, setFilterDateRange] = useState([null, null]);
+  const [dateFilter, setDateFilter] = useState(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false); // State for confirmation modal
+  const [actionType, setActionType] = useState(''); // State to determine the action type (add/update)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,15 +45,14 @@ export const Sparepart = () => {
         const spareparts = await API_Source.getSparepart();
         const categories = await API_Source.getKategori();
         const suppliers = await API_Source.getPemasok();
-        
-        // Mengurutkan spareparts berdasarkan tanggal masuk terbaru hingga terlama
+
         spareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
 
         setSparepartList(spareparts);
         setKategoriList(categories);
         setPemasokList(suppliers);
       } catch (err) {
-        Swal.fire('Error!', 'Failed to fetch data. Please try again later.', 'error');
+        Swal.fire('Error!', err.message || 'Failed to fetch data.', 'error');
       } finally {
         setLoading(false);
       }
@@ -55,20 +61,29 @@ export const Sparepart = () => {
     fetchData();
   }, []);
 
-  const handleAddSparepart = async (data) => {
+  const handleAddSparepart = () => {
+    setActionType('add');
+    setConfirmModalOpen(true); // Open confirmation modal
+  };
+
+  const handleUpdateSparepart = () => {
+    setActionType('update');
+    setConfirmModalOpen(true); // Open confirmation modal
+  };
+
+  const confirmAddSparepart = async () => {
     const tanggal_masuk = new Date().toISOString();
     try {
-      const newSparepart = await API_Source.postSparepart(
-        data.namaSparepart,
-        data.harga,
-        data.margin,
-        data.stok,
-        data.selectedKategori,
-        data.selectedPemasok,
-        data.deskripsi,
+      await API_Source.postSparepart(
+        sparepartData.namaSparepart,
+        sparepartData.harga,
+        sparepartData.margin,
+        sparepartData.stok,
+        sparepartData.selectedKategori,
+        sparepartData.selectedPemasok,
+        sparepartData.deskripsi,
         tanggal_masuk
       );
-      console.log('New Sparepart added:', newSparepart);
       setSparepartData({
         namaSparepart: '',
         harga: '',
@@ -79,78 +94,42 @@ export const Sparepart = () => {
         selectedPemasok: '',
       });
       const updatedSpareparts = await API_Source.getSparepart();
-      // Mengurutkan spareparts setelah penambahan
       updatedSpareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
       setSparepartList(updatedSpareparts);
+      toast.success('Sparepart added successfully!'); // Use toast for success
+      setConfirmModalOpen(false); // Close confirmation modal
     } catch (error) {
-      console.error('Error adding sparepart:', error.message);
-      Swal.fire('Error!', error.message || 'Gagal menambahkan sparepart.', 'error');
+      toast.error(error || 'Failed to add sparepart.'); // Use toast for error
     }
   };
 
-  const handleUpdateSparepart = async (data) => {
+  const confirmUpdateSparepart = async () => {
     try {
       await API_Source.updatedSparepart(
-        data.id,
-        data.nama_sparepart,
-        data.harga,
-        data.margin,
-        data.stok,
-        data.id_kategori,
-        data.id_pemasok,
-        data.deskripsi,
-        data.tanggal_masuk
+        editSparepartData.id,
+        editSparepartData.nama_sparepart,
+        editSparepartData.harga,
+        editSparepartData.margin,
+        editSparepartData.stok,
+        editSparepartData.id_kategori,
+        editSparepartData.id_pemasok,
+        editSparepartData.deskripsi,
+        editSparepartData.tanggal_masuk
       );
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'Sparepart updated successfully!',
-      });
+      toast.success('Sparepart updated successfully!'); // Use toast for success
       setEditModalOpen(false);
+      setConfirmModalOpen(false); // Close confirmation modal
       const updatedSpareparts = await API_Source.getSparepart();
-      // Mengurutkan spareparts setelah pembaruan
       updatedSpareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
       setSparepartList(updatedSpareparts);
     } catch (error) {
-      console.error('Error updating sparepart:', error.message);
-      Swal.fire('Error!', error.message || 'Gagal memperbarui sparepart.', 'error');
+      toast.error(error || 'Failed to update sparepart.'); // Use toast for error
     }
   };
 
-  const confirmAddSparepart = async (data) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to add this spare part?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, add it!',
-      cancelButtonText: 'No, cancel!',
-    });
-
-    if (result.isConfirmed) {
-      await handleAddSparepart(data);
-    }
-  };
-
-  const confirmUpdateSparepart = async (data) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to update this spare part?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, update it!',
-      cancelButtonText: 'No, cancel!',
-    });
-
-    if (result.isConfirmed) {
-      await handleUpdateSparepart(data);
-    }
-  };
-
-  // Filter spare parts based on the search term and date range
-  const filteredSpareparts = sparepartList.filter(sparepart => {
+  const filteredSpareparts = sparepartList.filter((sparepart) => {
     const isWithinDateRange = () => {
-      if (!filterDateRange[0] || !filterDateRange[1]) return true; // Jika tidak ada filter tanggal, tampilkan semua
+      if (!filterDateRange[0] || !filterDateRange[1]) return true;
       const itemDate = new Date(sparepart.tanggal_masuk);
       return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
     };
@@ -162,104 +141,87 @@ export const Sparepart = () => {
   });
 
   if (loading) {
-    return <Spin size="large" tip="Loading..." />; // Menampilkan spinner loading dari Ant Design
+    return <Spin size="large" tip="Loading..." />;
   }
 
-  // Definisikan kolom untuk tabel
-  const columns = [
-    {
-      title: 'No',
-      key: 'index',
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Nama Sparepart',
-      dataIndex: 'nama_sparepart',
-      key: 'nama_sparepart',
-      render: (text, record) => (
-        <Link to={`/sparepart/${record.id_sparepart}`} className="text-blue-600 font-bold underline">
-          {text}
-        </Link>
-      ),
-    },
-    {
-      title: 'Deskripsi',
-      dataIndex: 'deskripsi',
-      key: 'deskripsi',
-    },
-    {
-      title: 'Harga',
-      dataIndex: 'harga',
-      key: 'harga',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Harga Jual',
-      dataIndex: 'harga_jual',
-      key: 'harga_jual',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Stok',
-      dataIndex: 'stok',
-      key: 'stok',
-      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
-    },
-    {
-      title: 'Tanggal Masuk',
-      dataIndex: 'tanggal_masuk',
-      key: 'tanggal_masuk',
-      render: (text) => format(new Date(text), 'dd/MM/yyyy'),
-    },
-    {
-      title: 'Aksi',
-      key: 'action',
-      render: (text, record) => (
-        <div>
-          <Button
-            type="link"
-            onClick={() => {
-              setEditSparepartData(record);
-              setEditModalOpen(true);
-            }}
-          >
-            <FaEdit className="text-blue-500" />
-          </Button>
-        </div>
-      ),
-    },
+  if (dateFilter === 'latest') {
+    filteredSpareparts.sort((a, b) => new Date(b.tanggal_masuk) - new Date(a.tanggal_masuk));
+  } else if (dateFilter === 'oldest') {
+    filteredSpareparts.sort((a, b) => new Date(a.tanggal_masuk) - new Date(b.tanggal_masuk));
+  }
+
+  const sortOptions = [
+    { value: '', label: 'Semua' },
+    { value: 'latest', label: 'Terbaru' },
+    { value: 'oldest', label: 'Terlama' },
   ];
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Sparepart</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search Sparepart..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border rounded p-2 w-full"
+    <div className="text-secondary p-6">
+      <h1 className="text-4xl font-bold mb-6 text-center text-gray-400">Daftar Sparepart</h1>
+      <div className="mb-4 flex flex-wrap gap-4 items-center">
+        <SearchFilter searchSparepart={searchTerm} setSearchSparepart={setSearchTerm} />
+        <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
+        <SelectFilter
+          options={sortOptions}
+          selectedValue={dateFilter}
+          onChange={setDateFilter}
+          placeholder="Urutkan berdasarkan tanggal"
         />
-        <RangePicker
-          onChange={dates => setFilterDateRange(dates)}
-          format="DD/MM/YYYY"
-          style={{ marginTop: 16, width: '20%' }}
-        />
+        <Button type="primary" onClick={() => setModalOpen(true)} className="ml-auto btn btn-primary">
+          Add Sparepart
+        </Button>
       </div>
       {filteredSpareparts.length > 0 ? (
-        <>
-          <Table
-            dataSource={filteredSpareparts}
-            columns={columns}
-            rowKey="id_sparepart"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 'max-content' }}
-          />
-          <div style={{ marginTop: 16 }}>
-            <Button type="primary" onClick={() => setModalOpen(true)}>Add Sparepart</Button>
-          </div>
-        </>
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Sparepart</th>
+                <th>Deskripsi</th>
+                <th>Harga</th>
+                <th>Harga Jual</th>
+                <th>Margin (%)</th>
+                <th>Stok</th>
+                <th>Tanggal Masuk</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSpareparts.map((record, index) => (
+                <tr key={record.id_sparepart} className="hover">
+                  <th>{index + 1}</th>
+                  <td>
+                    <Link
+                      to={`/sparepart/${record.id_sparepart}`}
+                      className="text-blue-600 font-bold underline"
+                    >
+                      {record.nama_sparepart}
+                    </Link>
+                  </td>
+                  <td>{record.deskripsi}</td>
+                  <td>{formatPrice(record.harga)}</td>
+                  <td>{formatPrice(record.harga_jual)}</td>
+                  <td className="text-center">{record.margin}%</td>
+                  <td className="text-center">{record.stok}</td>
+                  <td>{format(new Date(record.tanggal_masuk), 'dd/MM/yyyy')}</td>
+                  <td>
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        setEditSparepartData(record);
+                        setEditModalOpen(true);
+                      }}
+                    >
+                      <FaEdit className="text-blue-500" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <Alert
           message="Tidak ada sparepart"
@@ -272,20 +234,31 @@ export const Sparepart = () => {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAddSparepart={confirmAddSparepart}
+        onAddSparepart={() => {
+          setActionType('add');
+          setConfirmModalOpen(true); // Open confirmation modal on submit
+        }}
         sparepartData={{ ...sparepartData, kategoriList, pemasokList }}
         setSparepartData={setSparepartData}
       />
       <EditSparepartModal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        onUpdateSparepart={confirmUpdateSparepart}
+        onUpdateSparepart={() => {
+          setActionType('update');
+          setConfirmModalOpen(true); // Open confirmation modal on submit
+        }}
         sparepartData={editSparepartData}
         kategoriList={kategoriList}
         pemasokList={pemasokList}
       />
+      <ConfirmationModal
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={actionType === 'add' ? confirmAddSparepart : confirmUpdateSparepart}
+        message={actionType === 'add' ? 'Apakah Anda yakin ingin menambahkan sparepart ini?' : 'Apakah Anda yakin ingin memperbarui sparepart ini?'}
+      />
+      <ToastContainer /> {/* Add ToastContainer for notifications */}
     </div>
   );
-};
-
-export default Sparepart;
+}

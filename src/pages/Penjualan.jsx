@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { Table, Spin, Alert, Button, Input, Select, DatePicker } from 'antd'; // Import komponen dari Ant Design
-import { Link } from 'react-router-dom';
-import { formatPrice } from '../components/Rupiah';
+import { motion } from 'framer-motion';
+import { FaCheckCircle, FaTimesCircle, FaHourglassHalf } from 'react-icons/fa';
 import PenjualanModal from '../components/ModalPenjual'; // Import modal
 import format from 'date-fns/format';
 import Swal from 'sweetalert2'; // Import SweetAlert2
-
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+import DateFilter from '../components/DateFilter'; // Import the DateFilter component
+import SelectFilter from '../components/SelectFilter';
+import SearchFilter from '../components/SearchFilterPenjualan';
+import { Link } from 'react-router-dom';
+import { formatPrice } from '../components/Rupiah';
+import { Button, Alert } from 'antd'; // Import components from Ant Design
 
 export const Penjualan = () => {
   const [penjualanList, setPenjualanList] = useState([]); // Initialize as an empty array
@@ -16,6 +18,7 @@ export const Penjualan = () => {
   const [sparepartMap, setSparepartMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState(null);
   const [penjualanData, setPenjualanData] = useState({
     id_sparepart: '',
     id_customer: '',
@@ -23,7 +26,8 @@ export const Penjualan = () => {
     jumlah: '',
     metode_pembayaran: 'Tunai', // Default payment method
   });
-  const [searchTerm, setSearchTerm] = useState(''); // State for search input
+  const [searchCustomer, setSearchCustomer] = useState(''); // State for customer search input
+  const [searchSparepart, setSearchSparepart] = useState(''); // State for sparepart search input
   const [filterDateRange, setFilterDateRange] = useState([null, null]); // State for filter date range
 
   const fetchData = async () => {
@@ -109,7 +113,9 @@ export const Penjualan = () => {
   };
 
   if (loading) {
-    return <Spin size="large" tip="Loading..." />; // Menampilkan spinner loading dari Ant Design
+    return (
+      <div className="loading loading-spinner loading-lg"></div>
+    );
   }
 
   // Filter and sort the penjualanList based on search term and date range
@@ -118,96 +124,88 @@ export const Penjualan = () => {
       const customerName = customerMap[item.id_customer] || '';
       const sparepartName = sparepartMap[item.id_sparepart] || '';
       return (
-        customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sparepartName.toLowerCase().includes(searchTerm.toLowerCase())
+        customerName.toLowerCase().includes(searchCustomer.toLowerCase()) &&
+        sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
       );
     })
-    .filter(item => {
+    .filter((item) => {
       if (!filterDateRange[0] || !filterDateRange[1]) return true; // If no date filter, show all
       const itemDate = new Date(item.tanggal);
       return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
     })
     .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)); // Sort by date descending
 
-  // Definisikan kolom untuk tabel
-  const columns = [
-    {
-      title: 'No',
-      key: 'index',
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Nama Customer',
-      dataIndex: 'id_customer',
-      key: 'id_customer',
-      render: (text) => customerMap[text] || 'Unknown Customer',
-    },
-    {
-      title: 'Nama Sparepart',
-      dataIndex: 'id_sparepart',
-      key: 'id_sparepart',
-      render: (text) => sparepartMap[text] || 'Unknown Sparepart',
-    },
-    {
-      title: 'Jumlah',
-      dataIndex: 'jumlah',
-      key: 'jumlah',
-      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
-    },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal',
-      key: 'tanggal',
-      render: (text) => format(new Date(text), 'dd/MM/yyyy'),
-    },
-    {
-      title: 'Total Harga',
-      dataIndex: 'total_harga',
-      key: 'total_harga',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Metode Pembayaran',
-      dataIndex: 'metode_pembayaran',
-      key: 'metode_pembayaran',
-      render: (text) => <div style={{ textAlign: 'center' }}>{text}</div>,
-    },
-    {
-      title: 'Aksi',
-      key: 'action',
-      render: (text, record) => (
-        <Link to={`/penjualan/${record.id_penjualan}`} className="text-blue-600 underline hover:text-blue-800">Detail</Link>
-      ),
-    },
+  if (dateFilter === 'latest') {
+    filteredPenjualanList.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  } else if (dateFilter === 'oldest') {
+    filteredPenjualanList.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+  }
+
+  const sortOptions = [
+    { value: '', label: 'Semua' },
+    { value: 'latest', label: 'Terbaru' },
+    { value: 'oldest', label: 'Terlama' },
   ];
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Penjualan</h1>
-      <Input
-        placeholder="Search by Customer or Sparepart"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: 16 }}
-      />
-      <RangePicker
-        onChange={dates => setFilterDateRange(dates)}
-        format="DD/MM/YYYY"
-        style={{ marginBottom: 16 }}
-      />
+    <div className=" text-white p-6">
+      <h1 className="text-4xl font-bold mb-6 text-center">Daftar Penjualan</h1>
+      <div className="mb-4 flex flex-wrap gap-4 items-center">
+        <SearchFilter
+          searchCustomer={searchCustomer}
+          setSearchCustomer={setSearchCustomer}
+          searchSparepart={searchSparepart}
+          setSearchSparepart={setSearchSparepart}
+        />
+        <SelectFilter
+          options={sortOptions}
+          selectedValue={dateFilter}
+          onChange={setDateFilter}
+          placeholder="Urutkan berdasarkan tanggal"
+        />
+        <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
+        <div className="flex gap-2 justify-stretch w-full">
+        <Link to={'/historypenjualan'} type="primary" className="btn btn-info text-white">
+          History penjualan
+        </Link>
+        <Button type="primary" onClick={() => setModalOpen(true)} className="ml-auto btn btn-primary text-white">
+          Add Sale
+        </Button>
+        </div>
+      </div>
       {filteredPenjualanList.length > 0 ? (
-        <>
-          <Table
-            dataSource={filteredPenjualanList}
-            columns={columns}
-            rowKey="id_penjualan"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 'max-content' }}
-          />
-          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
- <Button type="primary" onClick={() => setModalOpen(true)}>Add Sale</Button>
-          </div>
-        </>
+        <table className="table w-full">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Customer</th>
+              <th>Nama Sparepart</th>
+              <th>Jumlah</th>
+              <th>Tanggal</th>
+              <th>Total Harga</th>
+              <th>Metode Pembayaran</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPenjualanList.map((item, index) => (
+              <tr key={item.id_penjualan}>
+                <td>{index + 1}</td>
+                <td>{customerMap[item.id_customer] || 'Unknown Customer'}</td>
+                <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
+                <td className="text-center">{item.jumlah}</td>
+                <td>{format(new Date(item.tanggal), 'dd/MM/yyyy')}</td>
+                <td>{formatPrice(item.total_harga)}</td>
+                <td className="text-center">{item.metode_pembayaran}</td>
+                <td>
+                  <Link to={`/penjualan/${item.id_penjualan}`} className="btn btn-link">
+                    Detail
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       ) : (
         <Alert
           message="Tidak ada penjualan"

@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_Source } from '../global/Apisource';
 import { motion } from 'framer-motion';
-import { FaBox, FaInfoCircle, FaTag, FaCalendarAlt, FaUser, FaStar } from 'react-icons/fa'; // Importing icons
+import { format } from 'date-fns';
+import { FaBox, FaInfoCircle, FaTag, FaCalendarAlt, FaUser , FaStar } from 'react-icons/fa'; // Importing icons
 import { formatPrice } from '../components/Rupiah';
-import format from 'date-fns/format';
 
 export const DetailSparepart = () => {
   const { id } = useParams(); // Get the spare part ID from the URL
@@ -56,7 +56,7 @@ export const DetailSparepart = () => {
   }, [sparepart, error]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <div className="flex justify-center items-center h-screen text-white">Loading...</div>;
   }
 
   if (error) {
@@ -84,23 +84,23 @@ export const DetailSparepart = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <h1 className="text-4xl font-bold text-center mb-6 text-blue-600">
+      <h1 className="text-4xl font-bold mb-6 text-center text-gray-400">
         {sparepart.nama_sparepart}
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white shadow-lg rounded-lg p-4">
+        <div className="bg-base-100 shadow-lg rounded-lg p-4">
           <img
-            src={sparepart.image || 'placeholder-image-url'}
+            src={sparepart.image || 'https://picsum.photos/400/300'} // Use random image if no image is provided
             alt={sparepart.nama_sparepart}
             className="w-full h-auto rounded-lg"
           />
         </div>
-        <div className="bg-white shadow-lg rounded-lg p-4">
+        <div className="bg-base-100 shadow-lg rounded-lg p-4">
           <h2 className="text-2xl font-semibold mb-2">
-            Price: <span className="text-green-600">{formatPrice(sparepart.harga)}</span>
+            Price: <span className="text-success">{formatPrice(sparepart.harga)}</span>
           </h2>
           <div className="flex items-center mb-2">
-            <FaStar className="text-yellow-500" />
+            <FaStar className="text-warning" />
             <span className="ml-2">
               {sparepart.rating} ({sparepart.reviews} reviews)
             </span>
@@ -122,7 +122,7 @@ export const DetailSparepart = () => {
             </p>
           </div>
           <div className="flex items-center mb-2">
-            <FaUser className="text-gray-500 mr-1" />
+            <FaUser  className="text-gray-500 mr-1" />
             <p>
               <strong>Supplier:</strong> {getSupplierName(sparepart.id_pemasok)}
             </p>
@@ -150,3 +150,5 @@ export const DetailSparepart = () => {
     </motion.div>
   );
 };
+
+export default DetailSparepart;

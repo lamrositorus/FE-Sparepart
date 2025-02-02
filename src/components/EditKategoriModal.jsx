@@ -20,25 +20,29 @@ const EditKategoriModal = ({ isOpen, onClose, onUpdateKategori, kategoriData }) 
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded shadow-lg">
+      <div className="bg-base-100 p-6 rounded-lg shadow-lg w-11/12 md:w-1/3">
         <h2 className="text-xl font-bold mb-4">Edit Kategori</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-1">Nama Kategori</label>
+            <label className="label">
+              <span className="label-text">Nama Kategori</span>
+            </label>
             <input
               type="text"
               value={namaKategori}
               onChange={(e) => setNamaKategori(e.target.value)}
-              className="border rounded w-full p-2"
+              className="input input-bordered w-full"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Deskripsi</label>
+            <label className="label">
+              <span className="label-text">Deskripsi</span>
+            </label>
             <textarea
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
-              className="border rounded w-full p-2"
+              className="textarea textarea-bordered w-full"
               required
             />
           </div>
@@ -46,11 +50,11 @@ const EditKategoriModal = ({ isOpen, onClose, onUpdateKategori, kategoriData }) 
             <button
               type="button"
               onClick={onClose}
-              className="mr-2 bg-gray-300 text-black rounded p-2"
+              className="btn btn-error mr-2"
             >
               Cancel
             </button>
-            <button type="submit" className="bg-blue-500 text-white rounded p-2">
+            <button type="submit" className="btn btn-primary">
               Update
             </button>
           </div>

@@ -1,52 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { API_Source } from '../global/Apisource';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../components/Rupiah';
-import {
-  FaTag,
-  FaUser ,
-  FaCalendarAlt,
-  FaMoneyBillWave,
-  FaCheckCircle,
-  FaClock,
-  FaTimesCircle,
-  FaInfoCircle 
-} from 'react-icons/fa'; // Importing icons
+import { API_Source } from '../global/Apisource';
+import { FaTag, FaUser , FaCalendarAlt, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
 import { format } from 'date-fns';
 import Breadcrumb from '../components/BreadCumb'; // Importing Breadcrumb component
-import { Card } from 'antd'; // Importing Card component from Ant Design
-
-// Komponen untuk menampilkan ikon status
-const StatusIcon = ({ status }) => {
-  let icon;
-  let color;
-
-  switch (status) {
-    case 'Selesai':
-      icon = <FaCheckCircle />;
-      color = 'text-green-500';
-      break;
-    case 'Pending':
-      icon = <FaClock />;
-      color = 'text-yellow-500';
-      break;
-    case 'Dibatalkan':
-      icon = <FaTimesCircle />;
-      color = 'text-red-500';
-      break;
-    default:
-      icon = null;
-      color = '';
-  }
-
-  return (
-    <div className={`flex items-center ${color}`}>
-      {icon}
-      <span className="ml-2">{status}</span>
-    </div>
-  );
-};
+import StatusIcon from '../components/StatusIcon'; // Import the StatusIcon component
 
 export const DetailPembelian = () => {
   const [pembelianDetails, setPembelianDetails] = useState(null);
@@ -100,7 +60,6 @@ export const DetailPembelian = () => {
   const breadcrumbLinks = [
     { label: 'Home', path: '/kategori' },
     { label: 'Pembelian', path: '/pembelian' },
-    { label: 'Detail Pembelian', path: `/pembelian/${id}` },
   ];
 
   return (
@@ -110,64 +69,78 @@ export const DetailPembelian = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Breadcrumb links={breadcrumbLinks} userId={id} />
+      <Breadcrumb links={breadcrumbLinks} />
       <h1 className="text-4xl font-bold text-center mb-6 text-blue-600">Detail Pembelian</h1>
-      <Card className="bg-white shadow-lg rounded-lg p-6 transition-transform transform hover:scale-105">
-        <ul className="space-y-4">
-          <li className="flex items-center">
-            <FaTag className="mr-2 text-blue-500" />
-            <strong>ID Pembelian:</strong>
-            <span className="ml-4">{pembelianDetails.id_pembelian}</span>
-          </li>
-          <li className="flex items-center">
-            <FaTag className="mr-2 text-blue-500" />
-            <strong>Nama Sparepart:</strong>
-            <span className="ml-4">{sparepartName}</span>
-          </li>
-          <li className="flex items-center">
-            <FaUser  className="mr-2 text-blue-500" />
-            <strong>Nama Pemasok:</strong>
-            <span className="ml-4">{pemasokName}</span>
-          </li>
-          <li className="flex items-center">
-            <FaCalendarAlt className="mr-2 text-blue-500" />
-            <strong>Tanggal:</strong>
-            <span className="ml-4">{format(new Date(pembelianDetails.tanggal), 'dd/MM/yyyy')}</span>
-          </li>
-          <li className="flex items-center">
-            <FaMoneyBillWave className="mr-2 text-blue-500" />
-            <strong>Jumlah:</strong>
-            <span className="ml-4">{pembelianDetails.jumlah}</span>
-          </li>
-          <li className="flex items-center">
-            <FaMoneyBillWave className="mr-2 text-blue-500" />
-            <strong>Total Harga:</strong>
-            <span className="ml-4">{formatPrice(pembelianDetails.total_harga)}</span>
-          </li>
-          <li className="flex items-center">
-            <FaInfoCircle  className="mr-2 text-blue-500" />
-            <strong>Status:</strong>
-            <span className='ml-4'>
-            <StatusIcon status={pembelianDetails.status} /> {/* Menampilkan ikon status */}
-            </span>
-
-          </li>
-          <li className="flex items-center">
-            <FaCalendarAlt className="mr-2 text-blue-500" />
-            <strong>Created At:</strong>
-            <span className="ml-4">
-              {format(new Date(pembelianDetails.created_at), 'dd/MM/yyyy')}
-            </span>
-          </li>
-          <li className="flex items-center">
-            <FaCalendarAlt className="mr-2 text-blue-500" />
-            <strong>Updated At:</strong>
-            <span className="ml-4">
-              {format(new Date(pembelianDetails.updated_at), 'dd/MM/yyyy')}
-            </span>
-          </li>
-        </ul>
-      </Card>
+      <div className="card bg-base-100 shadow-xl p-6">
+        <div className="flex flex-col gap-5 md:flex-row">
+          <div className="md:w-1/3 mb-4 md:mb-0">
+            <img
+              src={`https://picsum.photos/400/300`} // Use random image
+              alt={sparepartName}
+              className="w-full h-auto rounded-lg"
+            />
+          </div>
+          <div className="md:w-1/2">
+            <ul className="space-y-4">
+              <li className="flex items-center">
+                <FaTag className="mr-2 text-blue-500" />
+                <strong>ID Pembelian:</strong>
+                <span className="ml-4">{pembelianDetails.id_pembelian}</span>
+              </li>
+              <li className="flex items-center">
+                <FaTag className="mr-2 text-blue-500" />
+                <strong>Nama Sparepart:</strong>
+                <span className="ml-4">{sparepartName}</span>
+              </li>
+              <li className="flex items-center">
+                <FaUser  className="mr-2 text-blue-500" />
+                <strong>Nama Pemasok:</strong>
+                <span className="ml-4">{pemasokName}</span>
+              </li>
+              <li className="flex items-center">
+                <FaCalendarAlt className="mr-2 text-blue-500" />
+                <strong>Tanggal:</strong>
+                <span className="ml-4">
+                  {format(new Date(pembelianDetails.tanggal), 'dd/MM/yyyy')}
+                </span>
+              </li>
+              <li className="flex items-center">
+                <FaMoneyBillWave className="mr-2 text-blue-500" />
+                <strong>Jumlah:</strong>
+                <span className="ml-4">{pembelianDetails.jumlah}</span>
+              </li>
+              <li className="flex items-center">
+                <FaMoneyBillWave className="mr-2 text-blue-500" />
+                <strong>Total Harga:</strong>
+                <span className="ml-4">{formatPrice(pembelianDetails.total_harga)}</span>
+              </li>
+              <li className="flex items-center">
+                <FaInfoCircle className="mr-2 text-blue-500" />
+                <strong>Status:</strong>
+                <span className="ml-4">
+                  <StatusIcon status={pembelianDetails.status} /> {/* Display status icon */}
+                </span>
+              </li>
+              <li className="flex items-center">
+                <FaCalendarAlt className="mr-2 text-blue-500" />
+                <strong>Created At:</strong>
+                <span className="ml-4">
+                  {format(new Date(pembelianDetails.created_at), 'dd/MM/yyyy')}
+                </span>
+              </li>
+              <li className="flex items-center">
+                <FaCalendarAlt className="mr-2 text-blue-500" />
+                <strong>Updated At:</strong>
+                <span className="ml-4">
+                  {format(new Date(pembelianDetails.updated_at), 'dd/MM/yyyy')}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 };
+
+export default DetailPembelian;

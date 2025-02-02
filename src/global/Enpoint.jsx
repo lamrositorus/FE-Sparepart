@@ -3,7 +3,7 @@ import { CONFIG } from './Config';
 export const Endpoint = {
   login: `${CONFIG.API_URL}/user/login`,
   signup: `${CONFIG.API_URL}/user/signup`,
-
+  profile: (id) => `${CONFIG.API_URL}/user/${id}`,
   kategori: `${CONFIG.API_URL}/kategori`,
   detailKategori: (id) => `${CONFIG.API_URL}/kategori/${id}`,
 
@@ -15,10 +15,12 @@ export const Endpoint = {
   detailPembelian: (id) => `${CONFIG.API_URL}/pembelian/${id}`,
   penjualan: `${CONFIG.API_URL}/penjualan`,
   detailPenjualan: (id) => `${CONFIG.API_URL}/penjualan/${id}`,
-
+  stats: `${CONFIG.API_URL}/penjualan/stats`,
   sparepart: `${CONFIG.API_URL}/sparepart`,
   detailSparepart: (id) => `${CONFIG.API_URL}/sparepart/${id}`,
 
   historyPenjualan: `${CONFIG.API_URL}/historypenjualan`,
   historyPembelian: `${CONFIG.API_URL}/historypembelian`,
+
+  auth: `${CONFIG.API_URL}/auth/google`,
 };

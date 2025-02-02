@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { Table, Spin, Alert, Button, Select, DatePicker, Input } from 'antd'; // Mengimpor komponen dari Ant Design
+import { Spin, Alert, Button } from 'antd';
 import { FaCheckCircle, FaTimesCircle, FaHourglassHalf } from 'react-icons/fa';
 import { formatPrice } from '../components/Rupiah';
 import PembelianModal from '../components/ModalPembelian';
 import format from 'date-fns/format';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+import DateFilter from '../components/DateFilter';
+import SelectFilter from '../components/SelectFilter';
+import SearchFilter from '../components/SearchFilterPembelian'; // Import the SearchFilter component
 
 export const Pembelian = () => {
   const [pembelianList, setPembelianList] = useState([]);
@@ -22,12 +22,13 @@ export const Pembelian = () => {
     id_pemasok: '',
     tanggal: '',
     jumlah: '',
-    status: 'Pending', // Default status
+    status: 'Pending',
   });
-  const [filterStatus, setFilterStatus] = useState('All'); // State untuk filter status
-  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State untuk filter tanggal
-  const [searchSparepart, setSearchSparepart] = useState(''); // State untuk pencarian sparepart
-  const [searchPemasok, setSearchPemasok] = useState(''); // State untuk pencarian pemasok
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterDateRange, setFilterDateRange] = useState([null, null]);
+  const [searchSparepart, setSearchSparepart] = useState('');
+  const [searchPemasok, setSearchPemasok] = useState('');
+  const [dateFilter, setDateFilter] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -38,14 +39,12 @@ export const Pembelian = () => {
       ]);
       setPembelianList(pembelianData || []);
 
-      // Create a map of Supplier ID to Supplier Name
       const pemasokMapping = {};
       pemasokData.forEach((pemasok) => {
         pemasokMapping[pemasok.id_pemasok] = pemasok.nama_pemasok;
       });
       setPemasokMap(pemasokMapping);
 
-      // Create a map of Sparepart ID to Sparepart Name
       const sparepartMapping = {};
       sparepartData.forEach((sparepart) => {
         sparepartMapping[sparepart.id_sparepart] = sparepart.nama_sparepart;
@@ -79,15 +78,14 @@ export const Pembelian = () => {
 
     if (result.isConfirmed) {
       try {
-        const newPembelian = await API_Source.postPembelian(
+        await API_Source.postPembelian(
           data.id_sparepart,
           data.id_pemasok,
           data.tanggal,
           data.jumlah,
           data.status
         );
-        console.log('New Purchase added:', newPembelian);
-        fetchData(); // Refresh the list after adding
+        fetchData();
         setPembelianData({
           id_sparepart: '',
           id_pemasok: '',
@@ -101,7 +99,6 @@ export const Pembelian = () => {
           text: 'Purchase added successfully!',
         });
       } catch (error) {
-        console.error('Error adding purchase:', error.message);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -139,9 +136,8 @@ export const Pembelian = () => {
           title: 'Success',
           text: 'Status updated successfully!',
         });
-        fetchData(); // Refresh the list after updating
+        fetchData();
       } catch (error) {
-        console.error('Error updating status:', error.message);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -152,18 +148,17 @@ export const Pembelian = () => {
   };
 
   if (loading) {
-    return <Spin size="large" tip="Loading..." />; // Menampilkan spinner loading dari Ant Design
+    return <Spin size="large" tip="Loading..." />;
   }
 
-  // Filter data berdasarkan status, tanggal, sparepart, dan pemasok
   const filteredPembelianList = pembelianList
-    .filter(item => filterStatus === 'All' || item.status === filterStatus)
-    .filter(item => {
-      if (!filterDateRange[0] || !filterDateRange[1]) return true; // Jika tidak ada filter tanggal, tampilkan semua
+    .filter((item) => filterStatus === 'All' || item.status === filterStatus)
+    .filter((item) => {
+      if (!filterDateRange[0] || !filterDateRange[1]) return true;
       const itemDate = new Date(item.tanggal);
       return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
     })
-    .filter(item => {
+    .filter((item) => {
       const sparepartName = sparepartMap[item.id_sparepart] || '';
       const pemasokName = pemasokMap[item.id_pemasok] || '';
       return (
@@ -172,89 +167,56 @@ export const Pembelian = () => {
       );
     });
 
-  const columns = [
-    {
-      title: 'No',
-      render: (text, record, index) => index + 1,
-      align: 'center',
-    },
-    {
-      title: 'Nama Pemasok',
-      dataIndex: 'id_pemasok',
-      render: (text) => pemasokMap[text] || 'Unknown Pemasok',
-    },
-    {
-      title: 'Nama Sparepart',
-      dataIndex: 'id_sparepart',
-      render: (text) => sparepartMap[text] || 'Unknown Sparepart',
-    },
-    {
-      title: 'Jumlah',
-      dataIndex: 'jumlah',
-      align: 'center',
-    },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal',
-      render: (text) => format(new Date(text), 'dd/MM/yyyy'),
-      align: 'center',
-    },
-    {
-      title: 'Total Harga',
-      dataIndex: 'total_harga',
-      render: (text) => formatPrice(text),
-      align: 'center',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      render: (text, record) => (
-        <span className="flex items-center justify-center">
-          {text === 'Pending' && <FaHourglassHalf className="text-yellow-500 cursor-pointer" onClick={() => handleUpdateStatus(record.id_pembelian, text)} />}
-          {text === 'Selesai' && <FaCheckCircle className="text-green-500 cursor-pointer" onClick={() => handleUpdateStatus(record.id_pembelian, text)} />}
-          {text === 'Dibatalkan' && <FaTimesCircle className="text-red-500 cursor-pointer" onClick={() => handleUpdateStatus(record.id_pembelian, text)} />}
-          <span className="ml-2">{text}</span>
-        </span>
-      ),
-      align: 'center',
-    },
-    {
-      title: 'Aksi',
-      render: (text, record) => (
-        <Link to={`${record.id_pembelian}`} className="text-blue-600 underline hover:text-blue-800">Detail</Link>
-      ),
-      align: 'center',
-    },
+  if (dateFilter === 'latest') {
+    filteredPembelianList.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  } else if (dateFilter === 'oldest') {
+    filteredPembelianList.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+  }
+
+  const sortOptions = [
+    { value: '', label: 'Semua' },
+    { value: 'latest', label: 'Terbaru' },
+    { value: 'oldest', label: 'Terlama' },
+  ];
+
+  const statusOptions = [
+    { value: 'All', label: 'All' },
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Selesai', label: 'Selesai' },
+    { value: 'Dibatalkan', label: 'Dibatalkan' },
   ];
 
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Pembelian</h1>
-      <div className="mb-4">
-        <Select
-          defaultValue="All"
-          style={{ width: 120, marginRight: 16 }}
-          onChange={value => setFilterStatus(value)}
-        >
-          <Option value="All">All</Option>
-          <Option value="Pending">Pending</Option>
-          <Option value="Selesai">Selesai</Option>
-          <Option value="Dibatalkan">Dibatalkan</Option>
-        </Select>
-        <RangePicker
-          onChange={dates => setFilterDateRange(dates)}
-          format="DD/MM/YYYY"
+      <div className="mb-4 flex flex-wrap gap-4 items-center">
+        <SelectFilter
+          options={statusOptions}
+          selectedValue={filterStatus}
+          onChange={setFilterStatus}
+          placeholder="Filter Status"
         />
-        <Input
-          placeholder="Cari Sparepart"
-          style={{ width: 200, marginLeft: 16 }}
-          onChange={e => setSearchSparepart(e.target.value)}
+        <SelectFilter
+          options={sortOptions}
+          selectedValue={dateFilter}
+          onChange={setDateFilter}
+          placeholder="Urutkan berdasarkan tanggal"
         />
-        <Input
-          placeholder="Cari Pemasok"
-          style={{ width: 200, marginLeft: 16 }}
-          onChange={e => setSearchPemasok(e.target.value)}
+        <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
+        <SearchFilter
+          searchPemasok={searchPemasok}
+          setSearchPemasok={setSearchPemasok}
+          searchSparepart={searchSparepart}
+          setSearchSparepart={setSearchSparepart}
         />
+        <div className="flex gap-2 justify-stretch w-full">
+        <Link to={'/historypembelian'} type="primary" className="btn btn-info text-white">
+          History pembelian
+        </Link>
+        <Button type="primary" onClick={() => setModalOpen(true)} className="ml-auto btn btn-primary text-white">
+          Add purchase
+        </Button>
+        </div>
       </div>
       {filteredPembelianList.length === 0 ? (
         <Alert
@@ -264,20 +226,60 @@ export const Pembelian = () => {
           showIcon
         />
       ) : (
-        <>
-          <Table
-            dataSource={filteredPembelianList}
-            columns={columns}
-            rowKey="id_pembelian"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 'max-content' }}
-          />
-          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            <Button type="primary" onClick={() => setModalOpen(true)}>
-              Add Purchase
-            </Button>
-          </div>
-        </>
+        <table className="table w-full">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Pemasok</th>
+              <th>Nama Sparepart</th>
+              <th>Jumlah</th>
+              <th>Tanggal</th>
+              <th>Total Harga</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPembelianList.map((item, index) => (
+              <tr key={item.id_pembelian}>
+                <td className="text-center">{index + 1}</td>
+                <td>{pemasokMap[item.id_pemasok] || 'Unknown Pemasok'}</td>
+                <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
+                <td className="text-center">{item.jumlah}</td>
+                <td>{format(new Date(item.tanggal), 'dd/MM/yyyy')}</td>
+                <td>{formatPrice(item.total_harga)}</td>
+                <td className="text-center">
+                  <span className="flex items-center justify-center">
+                    {item.status === 'Pending' && (
+                      <FaHourglassHalf
+                        className="text-yellow-500 cursor-pointer"
+                        onClick={() => handleUpdateStatus(item.id_pembelian, item.status)}
+                      />
+                    )}
+                    {item.status === 'Selesai' && (
+                      <FaCheckCircle
+                        className="text-green-500 cursor-pointer"
+                        onClick={() => handleUpdateStatus(item.id_pembelian, item.status)}
+                      />
+                    )}
+                    {item.status === 'Dibatalkan' && (
+                      <FaTimesCircle
+                        className="text-red-500 cursor-pointer"
+                        onClick={() => handleUpdateStatus(item.id_pembelian, item.status)}
+                      />
+                    )}
+                    <span className="ml-2">{item.status}</span>
+                  </span>
+                </td>
+                <td className="text-center">
+                  <Link to={`${item.id_pembelian}`} className="btn btn-link">
+                    Detail
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       <PembelianModal

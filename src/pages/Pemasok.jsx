@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { FaUser , FaMapMarkedAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
 import PemasokModal from '../components/ModalPemasok'; // Import the modal component
 import Swal from 'sweetalert2'; // Import SweetAlert
+import { ToastContainer, toast } from 'react-toastify'; // Import Toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 
 export const Pemasok = () => {
   const [pemasokList, setPemasokList] = useState([]);
@@ -19,19 +21,18 @@ export const Pemasok = () => {
     email: '',
   });
 
-  // Function to fetch suppliers
+  // Fetch suppliers on component mount
   const fetchPemasok = async () => {
     try {
       const data = await API_Source.getPemasok();
       setPemasokList(data || []); // Ensure we set it to an empty array if null
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      Swal.fire('Error!', err || 'Something went wrong', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch suppliers on component mount
   useEffect(() => {
     fetchPemasok();
   }, []);
@@ -46,7 +47,7 @@ export const Pemasok = () => {
         data.email
       );
       console.log('New Supplier added:', newPemasok);
-      fetchPemasok(); // Refresh the list after adding
+      await fetchPemasok(); // Refresh the list after adding
       setPemasokData({
         id_pemasok: null,
         nama_pemasok: '',
@@ -54,23 +55,21 @@ export const Pemasok = () => {
         telepon: '',
         email: '',
       });
-
-      // Show success alert
-      Swal.fire({
-        icon: 'success',
-        title: 'Pemasok Ditambahkan',
-        text: 'Pemasok baru berhasil ditambahkan!',
-      });
+  
+      // Show success toast
+      toast.success('Pemasok baru berhasil ditambahkan!');
     } catch (error) {
       console.error('Error adding supplier:', error);
-      // Show error alert
-      Swal.fire({icon: 'error', title: 'Gagal Menambahkan Pemasok', text: error});
+      // Safely access the error message
+      const errorMessage = error?.response?.data?.message || error || 'Something went wrong';
+      // Show error toast
+      toast.error(errorMessage);
     }
   };
 
   // Display loading or error if any
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <div className="flex justify-center items-center h-screen text-white">Loading...</div>;
   }
 
   if (error) {
@@ -81,7 +80,16 @@ export const Pemasok = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-6 text-center text-blue-600">Daftar Pemasok</h1>
+      <ToastContainer /> {/* Add ToastContainer for toast notifications */}
+      <h1 className="text-4xl font-bold mb-6 text-center text-gray-400">Daftar Pemasok</h1>
+      <div className="mt-6">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="btn btn-primary text-white"
+        >
+          Tambah Pemasok
+        </button>
+      </div>
       {pemasokList.length === 0 ? (
         <div className="text-center text-gray-500">
           <p>Tidak ada Pemasok yang tersedia.</p>
@@ -102,7 +110,7 @@ export const Pemasok = () => {
           {pemasokList.map((pemasok) => (
             <motion.li
               key={pemasok.id_pemasok}
-              className="bg-white shadow-lg rounded-lg p-6 flex flex-col transition-transform transform"
+              className="bg-base-100 shadow-lg rounded-lg p-6 flex flex-col transition-transform transform"
             >
               <FaUser  className="text-blue-500 mb-2" size={30} />
               <h2 className="text-xl font-semibold">{pemasok.nama_pemasok}</h2>
@@ -123,15 +131,6 @@ export const Pemasok = () => {
         </motion.ul>
       )}
 
-      <div className="mt-6">
-        <button
-          onClick={() => setModalOpen(true)}
-          className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
-        >
-          Tambah Pemasok
-        </button>
-      </div>
-
       <PemasokModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -143,3 +142,4 @@ export const Pemasok = () => {
   );
 };
 
+export default Pemasok;

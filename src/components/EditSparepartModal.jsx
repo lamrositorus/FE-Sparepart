@@ -32,7 +32,7 @@ const EditSparepartModal = ({
     e.preventDefault();
     onUpdateSparepart({
       id: sparepartData.id_sparepart,
-      nama_sparepart: namaSparepart, // Use the correct variable name
+      nama_sparepart: namaSparepart,
       harga,
       margin,
       stok,
@@ -47,69 +47,81 @@ const EditSparepartModal = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-11/12 md:w-1/3">
+      <div className="bg-base-100 rounded-lg p-6 w-11/12 md:w-1/3">
         <h2 className="text-2xl font-semibold mb-4">Edit Sparepart</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700">Nama Sparepart</label>
+            <label className="label">
+              <span className="label-text">Nama Sparepart</span>
+            </label>
             <input
               type="text"
               value={namaSparepart}
               onChange={(e) => setNamaSparepart(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="input input-bordered w-full"
               placeholder="Enter spare part name"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Harga</label>
+            <label className="label">
+              <span className="label-text">Harga</span>
+            </label>
             <input
               type="number"
               value={harga}
               onChange={(e) => setHarga(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="input input-bordered w-full"
               placeholder="Enter price"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Margin</label>
+            <label className="label">
+              <span className="label-text">Margin</span>
+            </label>
             <input
               type="number"
               value={margin}
               onChange={(e) => setMargin(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="input input-bordered w-full"
               placeholder="Enter margin"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Stok</label>
+            <label className="label">
+              <span className="label-text">Stok</span>
+            </label>
             <input
               type="number"
               value={stok}
               onChange={(e) => setStok(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="input input-bordered w-full"
               placeholder="Enter stock quantity"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Deskripsi</label>
+            <label className="label">
+              <span className="label-text">Deskripsi</span>
+            </label>
             <textarea
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="textarea textarea-bordered w-full"
               placeholder="Enter description"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Kategori</label>
+            <label className="label">
+              <span className="label-text">Kategori</span>
+            </label>
             <select
               value={selectedKategori}
               onChange={(e) => setSelectedKategori(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="select select-bordered w-full"
               required
             >
               <option value="">Select category</option>
@@ -121,11 +133,13 @@ const EditSparepartModal = ({
             </select>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Pemasok</label>
+            <label className="label">
+              <span className="label-text">Pemasok</span>
+            </label>
             <select
               value={selectedPemasok}
               onChange={(e) => setSelectedPemasok(e.target.value)}
-              className="border rounded p-2 w-full"
+              className="select select-bordered w-full"
               required
             >
               <option value="">Select supplier</option>
@@ -137,13 +151,13 @@ const EditSparepartModal = ({
             </select>
           </div>
           <div className="flex justify-between">
-            <button type="submit" className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600">
+            <button type="submit" className="btn btn-primary">
               Update Sparepart
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-black rounded p-2 hover:bg-gray-400"
+              className="btn btn-secondary"
             >
               Cancel
             </button>

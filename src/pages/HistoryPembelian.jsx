@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { Table, Spin, Alert, Input, Select } from 'antd';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { formatPrice } from '../components/Rupiah';
-
-const { Option } = Select;
+import DateFilter from '../components/DateFilter';
+import SearchFilter from '../components/SearchFilterPembelian';
+import SelectFilter from '../components/SelectFilter';
 
 export const HistoryPembelian = () => {
   const [historyData, setHistoryData] = useState([]);
@@ -14,183 +14,107 @@ export const HistoryPembelian = () => {
   const [error, setError] = useState(null);
   const [searchPemasok, setSearchPemasok] = useState('');
   const [searchSparepart, setSearchSparepart] = useState('');
-  const [filterDate, setFilterDate] = useState('latest');
-
-  const fetchHistoryPembelian = async () => {
-    try {
-      const response = await API_Source.getHistoryPembelian();
-      setHistoryData(response);
-    } catch (error) {
-      console.error('Error fetching history pembelian:', error);
-      setError(error.message);
-    }
-  };
-
-  const fetchPemasok = async () => {
-    try {
-      const data = await API_Source.getPemasok();
-      setPemasok(data);
-    } catch (error) {
-      console.error('Error fetching pemasok:', error);
-      setError(error.message);
-    }
-  };
-
-  const fetchSpareparts = async () => {
-    try {
-      const data = await API_Source.getSparepart();
-      setSpareparts(data);
-    } catch (error) {
-      console.error('Error fetching spareparts:', error);
-      setError(error.message);
-    }
-  };
+  const [filterDateRange, setFilterDateRange] = useState([null, null]);
+  const [dateFilter, setDateFilter] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      await Promise.all([fetchHistoryPembelian(), fetchPemasok(), fetchSpareparts()]);
-      setLoading(false);
+      try {
+        const [history, pemasokData, sparepartsData] = await Promise.all([
+          API_Source.getHistoryPembelian(),
+          API_Source.getPemasok(),
+          API_Source.getSparepart(),
+        ]);
+        setHistoryData(history);
+        setPemasok(pemasokData);
+        setSpareparts(sparepartsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
 
   if (loading) {
-    return <Spin size="large" tip="Loading..." />;
+    return <span className="loading loading-spinner text-accent"></span>;
   }
 
   if (error) {
     return (
-      <Alert
-        message="Error"
-        description={
-          <span>
-            <FaExclamationTriangle /> {error}
-          </span>
-        }
-        type="error"
-        showIcon
-      />
+      <div className="alert alert-error shadow-lg">
+        <FaExclamationTriangle className="text-xl" />
+        <span>{error}</span>
+      </div>
     );
   }
 
-  const pemasokMap = {};
-  pemasok.forEach((item) => {
-    pemasokMap[item.id_pemasok] = item.nama_pemasok;
+  const pemasokMap = Object.fromEntries(pemasok.map((item) => [item.id_pemasok, item.nama_pemasok]));
+  const sparepartMap = Object.fromEntries(spareparts.map((item) => [item.id_sparepart, item.nama_sparepart]));
+
+  const filteredData = historyData.filter((item) => {
+    const pemasokName = pemasokMap[item.id_pemasok] || '';
+    const sparepartName = sparepartMap[item.id_sparepart] || '';
+    return (
+      pemasokName.toLowerCase().includes(searchPemasok.toLowerCase()) &&
+      sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
+    );
+  }).filter((item) => {
+    if (!filterDateRange[0] || !filterDateRange[1]) return true;
+    const itemDate = new Date(item.tanggal);
+    return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
   });
 
-  const sparepartMap = {};
-  spareparts.forEach((item) => {
-    sparepartMap[item.id_sparepart] = item.nama_sparepart;
-  });
+  if (dateFilter === 'latest') filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  if (dateFilter === 'oldest') filteredData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
 
-  const totalPembelian = historyData.reduce(
-    (total, item) => total + parseFloat(item.total_harga),
-    0
-  );
-
-  // Filter data berdasarkan pencarian dan filter tanggal
-  const filteredData = historyData
-    .filter(item => {
-      const pemasokName = pemasokMap[item.id_pemasok] || '';
-      const sparepartName = sparepartMap[item.id_sparepart] || '';
-      return (
-        pemasokName.toLowerCase().includes(searchPemasok.toLowerCase()) &&
-        sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
-      );
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.tanggal);
-      const dateB = new Date(b.tanggal);
-      return filterDate === 'latest' ? dateB - dateA : dateA - dateB;
-    });
-
-  const columns = [
-    {
-      title: 'ID History Pembelian',
-      dataIndex: 'id_history_pembelian',
-      key: 'id_history_pembelian',
-    },
-    {
-      title: 'ID Pembelian',
-      dataIndex: 'id_pembelian',
-      key: 'id_pembelian',
-    },
-    {
-      title: 'Nama Pemasok',
-      dataIndex: 'id_pemasok',
-      key: 'id_pemasok',
-      render: (text) => pemasokMap[text] || 'Unknown Pemasok',
-    },
-    {
-      title: 'Nama Sparepart',
-      dataIndex: 'id_sparepart',
-      key: 'id_sparepart',
-      render: (text) => sparepartMap[text] || 'Unknown Sparepart',
-    },
-    {
-      title: 'Jumlah',
-      dataIndex: 'jumlah',
-      key: 'jumlah',
-    },
-    {
-      title: 'Total Harga',
-      dataIndex: 'total_harga',
-      key: 'total_harga',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal',
-      key: 'tanggal',
-      render: (text) => new Date(text).toLocaleDateString(),
-    },
-  ];
+  const totalPembelian = filteredData.reduce((total, item) => total + parseFloat(item.total_harga || 0), 0);
 
   return (
-    <div>
-      <h1>History Pembelian</h1>
-      <Input
-        placeholder="Cari Pemasok"
-        value={searchPemasok}
-        onChange={(e) => setSearchPemasok(e.target.value)}
-        style={{ marginBottom: 16, width: 200 }}
-      />
-      <Input
-        placeholder="Cari Sparepart"
-        value={searchSparepart}
-        onChange={(e) => setSearchSparepart(e.target.value)}
-        style={{ marginBottom: 16, width: 200 }}
-      />
-      <Select
-        defaultValue="latest"
-        onChange={(value) => setFilterDate(value)}
-        style={{ marginBottom: 16, width: 200 }}
-      >
-        <Option value="latest">Terbaru</Option>
-        <Option value="oldest">Terlama</Option>
-      </Select>
-
+    <div className="p-6  text-white rounded-lg">
+      <h1 className="text-3xl font-bold mb-4">History Pembelian</h1>
+      <SearchFilter searchPemasok={searchPemasok} setSearchPemasok={setSearchPemasok} searchSparepart={searchSparepart} setSearchSparepart={setSearchSparepart} />
+      <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
+      <SelectFilter options={[{ value: '', label: 'Semua' }, { value: 'latest', label: 'Terbaru' }, { value: 'oldest', label: 'Terlama' }]} selectedValue={dateFilter} onChange={setDateFilter} />
       {filteredData.length === 0 ? (
-        <Alert
-          message="Tidak ada data"
-          description="Belum ada data history pembelian yang tersedia."
-          type="info"
-          showIcon
-        />
+        <div className="alert alert-info mt-4">
+          <span>Belum ada data history pembelian yang tersedia.</span>
+        </div>
       ) : (
-        <>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            rowKey="id_history_pembelian"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 'max-content' }}
-          />
-          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            Total Pembelian: {formatPrice(totalPembelian)}
-          </div>
-        </>
+        <div className="overflow-x-auto mt-4">
+          <table className="table  w-full">
+            <thead>
+              <tr>
+                <th>ID History Pembelian</th>
+                <th>ID Pembelian</th>
+                <th>Nama Pemasok</th>
+                <th>Nama Sparepart</th>
+                <th>Jumlah</th>
+                <th>Total Harga</th>
+                <th>Tanggal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((item) => (
+                <tr key={item.id_history_pembelian}>
+                  <td>{item.id_history_pembelian}</td>
+                  <td>{item.id_pembelian}</td>
+                  <td>{pemasokMap[item.id_pemasok] || 'Unknown Pemasok'}</td>
+                  <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
+                  <td>{item.jumlah}</td>
+                  <td>{formatPrice(item.total_harga)}</td>
+                  <td>{new Date(item.tanggal).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-4 font-bold text-lg">Total Pembelian: {formatPrice(totalPembelian)}</div>
+        </div>
       )}
     </div>
   );
 };
+
+export default HistoryPembelian;

@@ -19,15 +19,18 @@ const PembelianModal = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-11/12 md:w-1/3">
+      <div className="bg-base-100 rounded-lg p-6 w-11/12 md:w-1/3">
         <h2 className="text-2xl font-semibold mb-4">Add New Purchase</h2>
+        
         <div className="mb-4">
-          <label className="block text-gray-700">Pemasok</label>
+          <label className="label">
+            <span className="label-text">Pemasok</span>
+          </label>
           <select
             name="id_pemasok"
             value={pembelianData.id_pemasok}
             onChange={handleInputChange}
-            className="border rounded p-2 w-full"
+            className="select select-bordered w-full"
           >
             <option value="">Select Supplier</option>
             {Object.entries(pemasokMap).map(([id, name]) => (
@@ -37,13 +40,16 @@ const PembelianModal = ({
             ))}
           </select>
         </div>
+
         <div className="mb-4">
-          <label className="block text-gray-700">Sparepart</label>
+          <label className="label">
+            <span className="label-text">Sparepart</span>
+          </label>
           <select
             name="id_sparepart"
             value={pembelianData.id_sparepart}
             onChange={handleInputChange}
-            className="border rounded p-2 w-full"
+            className="select select-bordered w-full"
           >
             <option value="">Select Sparepart</option>
             {Object.entries(sparepartMap).map(([id, name]) => (
@@ -53,53 +59,63 @@ const PembelianModal = ({
             ))}
           </select>
         </div>
+
         <div className="mb-4">
-          <label className="block text-gray-700">Jumlah</label>
+          <label className="label">
+            <span className="label-text">Jumlah</span>
+          </label>
           <input
             type="number"
             name="jumlah"
             value={pembelianData.jumlah}
             onChange={handleInputChange}
-            className="border rounded p-2 w-full"
+            className="input input-bordered w-full"
             placeholder="Enter quantity"
           />
         </div>
+
         <div className="mb-4">
-          <label className="block text-gray-700">Tanggal</label>
+          <label className="label">
+            <span className="label-text">Tanggal</span>
+          </label>
           <input
             type="date"
             name="tanggal"
             value={pembelianData.tanggal}
             onChange={handleInputChange}
-            className="border rounded p-2 w-full"
+            className="input input-bordered w-full"
           />
         </div>
+
         <div className="mb-4">
-          <label className="block text-gray-700">Status</label>
+          <label className="label">
+            <span className="label-text">Status</span>
+          </label>
           <select
             name="status"
             value={pembelianData.status}
             onChange={handleInputChange}
-            className="border rounded p-2 w-full"
+            className="select select-bordered w-full"
           >
             <option value="Pending">Pending</option>
             <option value="Selesai">Selesai</option>
           </select>
         </div>
+
         <div className="flex justify-between">
           <button
             onClick={() => {
               onAddPembelian(pembelianData);
-              console.log('onAddpembelian: ', pembelianData);
+              console.log('onAddPembelian: ', pembelianData);
               onClose();
             }}
-            className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600"
+            className="btn btn-primary"
           >
             Add Purchase
           </button>
           <button
             onClick={onClose}
-            className="bg-gray-300 text-black rounded p-2 hover:bg-gray-400"
+            className="btn btn-error"
           >
             Cancel
           </button>

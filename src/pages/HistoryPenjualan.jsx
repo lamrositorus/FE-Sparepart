@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { Table, Spin, Alert, Input, Select } from 'antd';
+import { motion } from 'framer-motion';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { formatPrice } from '../components/Rupiah';
-
+import DateFilter from '../components/DateFilter'; // Import the DateFilter component
+import SearchFilter from '../components/SearchFilterPenjualan'; // Import the SearchFilter component
+import { Select, Alert } from 'antd'; // Import components from Ant Design
+import SelectFilter from '../components/SelectFilter';
 const { Option } = Select;
 
 export const HistoryPenjualan = () => {
@@ -14,7 +17,8 @@ export const HistoryPenjualan = () => {
   const [error, setError] = useState(null);
   const [searchCustomer, setSearchCustomer] = useState('');
   const [searchSparepart, setSearchSparepart] = useState('');
-  const [filterDate, setFilterDate] = useState('latest');
+  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State for date filter
+  const [dateFilter, setDateFilter] = useState(null);
 
   const fetchHistoryPenjualan = async () => {
     try {
@@ -55,7 +59,7 @@ export const HistoryPenjualan = () => {
   }, []);
 
   if (loading) {
-    return <Spin size="large" tip="Loading..." />;
+    return <div className="flex justify-center items-center h-screen text-white">Loading...</div>;
   }
 
   if (error) {
@@ -73,11 +77,6 @@ export const HistoryPenjualan = () => {
     );
   }
 
-  const totalKeuntungan = historyData.reduce(
-    (total, item) => total + parseFloat(item.keuntungan),
-    0
-  );
-
   const customerMap = {};
   customers.forEach((customer) => {
     customerMap[customer.id_customer] = customer.nama_customer;
@@ -88,9 +87,9 @@ export const HistoryPenjualan = () => {
     sparepartMap[sparepart.id_sparepart] = sparepart.nama_sparepart;
   });
 
-  // Filter data berdasarkan pencarian dan filter tanggal
+  // Filter data based on search and date filter
   const filteredData = historyData
-    .filter(item => {
+    .filter((item) => {
       const customerName = customerMap[item.id_customer] || '';
       const sparepartName = sparepartMap[item.id_sparepart] || '';
       return (
@@ -98,109 +97,41 @@ export const HistoryPenjualan = () => {
         sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
       );
     })
-    .sort((a, b) => {
-      const dateA = new Date(a.tanggal);
-      const dateB = new Date(b.tanggal);
-      return filterDate === 'latest' ? dateB - dateA : dateA - dateB;
+    .filter((item) => {
+      if (!filterDateRange[0] || !filterDateRange[1]) return true; // If no date filter, show all
+      const itemDate = new Date(item.tanggal);
+      return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
     });
 
-  const columns = [
-    {
-      title: 'ID History Penjualan',
-      dataIndex: 'id_history_penjualan',
-      key: 'id_history_penjualan',
-    },
-    {
-      title: 'ID Penjualan',
-      dataIndex: 'id_penjualan',
-      key: 'id_penjualan',
-    },
-    {
-      title: 'Nama Customer',
-      dataIndex: 'id_customer',
-      key: 'id_customer',
-      render: (text) => customerMap[text] || 'Unknown Customer',
-    },
-    {
-      title: 'Nama Sparepart',
-      dataIndex: 'id_sparepart',
-      key: 'id_sparepart',
-      render: (text) => sparepartMap[text] || 'Unknown Sparepart',
-    },
-    {
-      title: 'Jumlah',
-      dataIndex: 'jumlah',
-      key: 'jumlah',
-    },
-    {
-      title: 'Harga Beli',
-      dataIndex: 'harga_beli',
-      key: 'harga_beli',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Harga Jual',
-      dataIndex: 'harga_jual',
-      key: 'harga_jual',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Margin (%)',
-      dataIndex: 'margin',
-      key: 'margin',
-      render: (text, record) => {
-        const hargaJual = parseFloat(record.harga_jual);
-        const hargaBeli = parseFloat(record.harga_beli);
-        if (hargaJual > 0) {
-          const margin = ((hargaJual - hargaBeli) / hargaJual) * 100;
-          return `${margin.toFixed(2)}%`;
-        }
-        return '0%';
-      },
-    },
-    {
-      title: 'Keuntungan',
-      dataIndex: 'keuntungan',
-      key: 'keuntungan',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Total Harga',
-      dataIndex: 'total_harga',
-      key: 'total_harga',
-      render: (text) => formatPrice(text),
-    },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal',
-      key: 'tanggal',
-      render: (text) => new Date(text).toLocaleDateString(),
-    },
-  ];
+  // Sort data based on date filter
+  if (dateFilter === 'latest') {
+    filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  } else if (dateFilter === 'oldest') {
+    filteredData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+  }
+  // Inside the HistoryPenjualan component
+const sortOptions = [
+  { value: '', label: 'Semua' },
+  { value: 'latest', label: 'Terbaru' },
+  { value: 'oldest', label: 'Terlama' },
+];
 
   return (
-    <div>
-      <h1>History Penjualan</h1>
-      <Input
-        placeholder="Cari Customer"
-        value={searchCustomer}
-        onChange={(e) => setSearchCustomer(e.target.value)}
-        style={{ marginBottom: 16, width: 200 }}
+    <div className=" text-white p-6">
+      <h1 className="text-4xl font-bold mb-6 text-center">History Penjualan</h1>
+      <SearchFilter
+        searchCustomer={searchCustomer}
+        setSearchCustomer={setSearchCustomer}
+        searchSparepart={searchSparepart}
+        setSearchSparepart={setSearchSparepart}
       />
-      <Input
-        placeholder="Cari Sparepart"
-        value={searchSparepart}
-        onChange={(e) => setSearchSparepart(e.target.value)}
-        style={{ marginBottom: 16, width: 200 }}
-      />
-      <Select
-        defaultValue="latest"
-        onChange={(value) => setFilterDate(value)}
-        style={{ marginBottom: 16, width: 200 }}
-      >
-        <Option value="latest">Terbaru</Option>
-        <Option value="oldest">Terlama</Option>
-      </Select>
+      <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
+      <SelectFilter
+  options={sortOptions}
+  selectedValue={dateFilter}
+  onChange={setDateFilter}
+  placeholder="Urutkan berdasarkan tanggal"
+/>
 
       {filteredData.length === 0 ? (
         <Alert
@@ -210,19 +141,44 @@ export const HistoryPenjualan = () => {
           showIcon
         />
       ) : (
-        <>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            rowKey="id_history_penjualan"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 'max-content' }}
-          />
-          <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-            Total Keuntungan: {formatPrice(totalKeuntungan)}
-          </div>
-        </>
+        <table className="table w-full">
+          <thead>
+            <tr>
+              <th>ID History Penjualan</th>
+              <th>ID Penjualan</th>
+              <th>Nama Customer</th>
+              <th>Nama Sparepart</th>
+              <th>Jumlah</th>
+              <th>Harga Beli</th>
+              <th>Harga Jual</th>
+              <th>Margin (%)</th>
+              <th>Keuntungan</th>
+              <th>Total Harga</th>
+              <th>Tanggal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((item) => (
+              <tr key={item.id_history_penjualan}>
+                <td>{item.id_history_penjualan}</td>
+                <td>{item.id_penjualan}</td>
+                <td>{customerMap[item.id_customer] || 'Unknown Customer'}</td>
+                <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
+                <td>{item.jumlah}</td>
+                <td>{formatPrice(item.harga_beli)}</td>
+                <td>{formatPrice(item.harga_jual)}</td>
+                <td>
+                  {((item.harga_jual - item.harga_beli) / item.harga_jual * 100).toFixed(2)}%
+                </td>
+                <td>{formatPrice(item.keuntungan)}</td>
+                <td>{new Date(item.tanggal).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
 };
+
+export default HistoryPenjualan;
