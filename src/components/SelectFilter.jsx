@@ -1,4 +1,3 @@
-// src/components/SelectFilter.js
 import React from 'react';
 
 const SelectFilter = ({ options, selectedValue, onChange, placeholder }) => {
@@ -8,7 +7,9 @@ const SelectFilter = ({ options, selectedValue, onChange, placeholder }) => {
       onChange={(e) => onChange(e.target.value)}
       className="select select-bordered w-full max-w-xs mb-4"
     >
-      <option value="" disabled>{placeholder}</option>
+      <option value="" disabled>
+        {placeholder}
+      </option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}

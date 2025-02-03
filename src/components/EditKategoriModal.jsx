@@ -1,19 +1,37 @@
-import React, { useState, useEffect } from 'react';
+// src/components/EditKategoriModal.js (Perbaikan Lengkap)
+import React, { useEffect, useState } from 'react';
 
 const EditKategoriModal = ({ isOpen, onClose, onUpdateKategori, kategoriData }) => {
-  const [namaKategori, setNamaKategori] = useState('');
-  const [deskripsi, setDeskripsi] = useState('');
+  const [formData, setFormData] = useState({
+    nama_kategori: '',
+    deskripsi: '',
+  });
 
+  // Update form saat data kategori berubah
   useEffect(() => {
     if (kategoriData) {
-      setNamaKategori(kategoriData.nama_kategori);
-      setDeskripsi(kategoriData.deskripsi);
+      setFormData({
+        nama_kategori: kategoriData.nama_kategori || '',
+        deskripsi: kategoriData.deskripsi || '',
+      });
     }
   }, [kategoriData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUpdateKategori({ id: kategoriData.id_kategori, nama_kategori: namaKategori, deskripsi });
+    // Kirim semua data termasuk ID
+    onUpdateKategori({
+      ...kategoriData,
+      ...formData,
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   if (!isOpen) return null;
@@ -29,33 +47,33 @@ const EditKategoriModal = ({ isOpen, onClose, onUpdateKategori, kategoriData }) 
             </label>
             <input
               type="text"
-              value={namaKategori}
-              onChange={(e) => setNamaKategori(e.target.value)}
+              name="nama_kategori"
+              value={formData.nama_kategori}
+              onChange={handleChange}
               className="input input-bordered w-full"
               required
             />
           </div>
+
           <div className="mb-4">
             <label className="label">
               <span className="label-text">Deskripsi</span>
             </label>
             <textarea
-              value={deskripsi}
-              onChange={(e) => setDeskripsi(e.target.value)}
+              name="deskripsi"
+              value={formData.deskripsi}
+              onChange={handleChange}
               className="textarea textarea-bordered w-full"
               required
             />
           </div>
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-error mr-2"
-            >
-              Cancel
+
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="btn btn-outline">
+              Batal
             </button>
             <button type="submit" className="btn btn-primary">
-              Update
+              Simpan Perubahan
             </button>
           </div>
         </form>

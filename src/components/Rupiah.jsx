@@ -7,4 +7,4 @@ export const formatPrice = (price) => {
 };
 export const formatMonth = (month) => {
   return new Intl.DateTimeFormat('id-ID', { month: 'long' }).format(new Date(month));
-}
+};

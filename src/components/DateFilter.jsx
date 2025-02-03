@@ -19,11 +19,7 @@ const DateFilter = ({ filterDateRange, setFilterDateRange }) => {
         onChange={handleStartDateChange}
         className="input input-bordered mr-2 w-1/3"
       />
-      <input
-        type="date"
-        onChange={handleEndDateChange}
-        className="input input-bordered w-1/3"
-      />
+      <input type="date" onChange={handleEndDateChange} className="input input-bordered w-1/3" />
     </div>
   );
 };

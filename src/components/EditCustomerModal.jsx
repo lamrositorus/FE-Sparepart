@@ -83,11 +83,7 @@ const EditCustomerModal = ({ isOpen, onClose, onUpdateCustomer, customerData }) 
             <button type="submit" className="btn btn-primary">
               Update Customer
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-error"
-            >
+            <button type="button" onClick={onClose} className="btn btn-error">
               Cancel
             </button>
           </div>

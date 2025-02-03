@@ -16,11 +16,12 @@ export const Signup = () => {
     mutationFn: (newUser) =>
       API_Source.signup(newUser.username, newUser.password, newUser.email, newUser.role),
     onError: (error) => {
-      console.error('Signup error:', error.message);
-      console.log('input', username, password, email, role);
+      console.error('Signup error:', error);
+      toast.error('Signup failed: ' + error);
     },
     onSuccess: (data) => {
       console.log('Signup successful:', data);
+      toast.success('Signup successful! Redirecting to login...');
       navigate('/user/login');
     },
   });
@@ -33,29 +34,50 @@ export const Signup = () => {
   return (
     <div className="flex items-center justify-center min-h-screen ">
       <ToastContainer />
-      <div className="w-full max-w-md p-6  rounded-lg shadow-md">
+      <div className="w-full max-w-md p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center mb-4">Create an Account</h1>
         <p className="text-center mb-6">Please fill in the form to create an account</p>
         <form onSubmit={handleSignup}>
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Username"
-              className="input input-bordered w-full"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+            <label className="input input-bordered flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="h-4 w-4 opacity-70"
+              >
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+              </svg>
+              <input
+                type="text"
+                className="grow input input-bordered"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </label>
           </div>
           <div className="mb-4">
-            <input
-              type="email"
-              placeholder="Email"
-              className="input input-bordered w-full"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="input input-bordered flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="h-4 w-4 opacity-70"
+              >
+                <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+                <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+              </svg>
+              <input
+                type="email"
+                className="grow input input-bordered"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
           </div>
           <div className="mb-4">
             <ShowPassword
@@ -85,14 +107,31 @@ export const Signup = () => {
           </button>
           {mutation.isError && (
             <div className="mt-4">
-              <div className="alert alert-error">{mutation.error.message}</div>
+              <div role="alert" className="alert alert-error">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{mutation.error}</span>
+              </div>
             </div>
           )}
         </form>
         <p className="text-center mt-4">
-          Do you have an account? <Link to="/user/login" className="text-blue-500">Login</Link>
+          Do you have an account? <Link to="/user/login">Login</Link>
         </p>
       </div>
     </div>
   );
 };
+
+export default Signup;

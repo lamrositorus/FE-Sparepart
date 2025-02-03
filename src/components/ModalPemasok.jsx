@@ -13,7 +13,7 @@ const PemasokModal = ({ isOpen, onClose, onAddPemasok, pemasokData, setPemasokDa
 
   const handleSubmit = (e) => {
     // Basic validation
-  e.preventDefault();
+    e.preventDefault();
     if (
       !pemasokData.nama_pemasok ||
       !pemasokData.alamat ||
@@ -88,16 +88,10 @@ const PemasokModal = ({ isOpen, onClose, onAddPemasok, pemasokData, setPemasokDa
           />
         </div>
         <div className="flex justify-between">
-          <button
-            onClick={handleSubmit}
-            className="btn btn-primary"
-          >
+          <button onClick={handleSubmit} className="btn btn-primary">
             Add Supplier
           </button>
-          <button
-            onClick={onClose}
-            className="btn btn-error"
-          >
+          <button onClick={onClose} className="btn btn-error">
             Cancel
           </button>
         </div>

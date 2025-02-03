@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { API_Source } from '../global/Apisource';
-import { FaTag, FaUser , FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa'; // Importing icons
+import { FaTag, FaUser, FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa'; // Importing icons
 import Breadcrumb from '../components/BreadCumb'; // Import the Breadcrumb component
 import { formatPrice } from '../components/Rupiah';
 import StatusIcon from '../components/StatusIcon'; // Import the StatusIcon component
@@ -116,7 +116,7 @@ export const DetailPenjualan = () => {
                 <span className="ml-4">{getSparePartName(detail.id_sparepart)}</span>
               </li>
               <li className="flex items-center">
-                <FaUser  className="mr-2 text-blue-500" />
+                <FaUser className="mr-2 text-blue-500" />
                 <strong>Customer:</strong>
                 <span className="ml-4">{getCustomerName(detail.id_customer)}</span>
               </li>

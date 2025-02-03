@@ -67,16 +67,15 @@ export class API_Source {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`Error: ${response.status} - ${errorData.payload.message}`); // Tampilkan status dan respons
-        
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       console.log('User profile data:', data);
       return data.payload.data; // Mengembalikan data dari respons
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      const errorData = error.message;
-      throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
+      throw new Error(error);
     }
   }
 
@@ -196,7 +195,9 @@ export class API_Source {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const errorMessage =
+          errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -235,8 +236,6 @@ export class API_Source {
       );
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData?.payload?.message || 'An error occurred';
-
         throw new Error(errorData.payload.message);
       }
       const data = await response.json();
@@ -284,7 +283,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const errorMessage = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);
       }
       const data = await response.json();
       console.log('Customer data:', data);
@@ -401,7 +401,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       console.log('Pembelian data:', data);
@@ -490,7 +491,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       console.log('Penjualan data:', data);
@@ -555,7 +557,8 @@ export class API_Source {
     });
     if (!response.ok) {
       const Errordata = await response.json();
-      throw new Error(Errordata.payload.message);
+      const error = Errordata.payload?.message || Errordata.message || 'Unknown error occurred';
+      throw new Error(error);
     }
     const data = await response.json();
     console.log('detail sparepart: ', data);
@@ -613,48 +616,37 @@ export class API_Source {
     deskripsi,
     tanggal_masuk
   ) {
-    const response = await fetch(Endpoint.sparepart, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({
-        nama_sparepart,
-        harga,
-        margin,
-        stok,
-        id_kategori,
-        id_pemasok,
-        deskripsi,
-        tanggal_masuk,
-      }),
-    });
-    if (!response.ok) {
-      const Errordata = await response.json();
-      console.log('error', Errordata.payload.message);
-      throw new Error(Errordata.payload.message);
+    try {
+      const response = await fetch(Endpoint.sparepart, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          nama_sparepart,
+          harga,
+          margin,
+          stok,
+          id_kategori,
+          id_pemasok,
+          deskripsi,
+          tanggal_masuk,
+        }),
+      });
+      if (!response.ok) {
+        const Errordata = await response.json();
+        console.log('error', Errordata.payload.message);
+        throw new Error(Errordata.payload.message);
+      }
+      const data = await response.json();
+      console.log('detail sparepart: ', data);
+      return data.payload.data;
+    } catch (error) {
+      console.log('error', error);
+      throw error;
     }
-    const data = await response.json();
-    console.log('detail sparepart: ', data);
-    return data.payload.data;
-  }
-  static async deleteSparepart(id) {
-    const response = await fetch(Endpoint.detailSparepart(id), {
-      method: 'DELETE',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    if (!response.ok) {
-      const Errordata = await response.json();
-      throw new Error(Errordata.payload.message);
-    }
-    const data = await response.json();
-    console.log('delete sparepart: ', data);
-    return data.payload.data;
   }
   static async updatedSparepart(
     id,
@@ -665,7 +657,7 @@ export class API_Source {
     id_kategori,
     id_pemasok,
     deskripsi,
-    tanggal_masuk
+    updated_at
   ) {
     try {
       const response = await fetch(Endpoint.detailSparepart(id), {
@@ -682,7 +674,7 @@ export class API_Source {
           id_kategori,
           id_pemasok,
           deskripsi,
-          tanggal_masuk,
+          updated_at,
         }),
       });
       if (!response.ok) {
@@ -694,6 +686,22 @@ export class API_Source {
     } catch (error) {
       console.error('Error posting sparepart:', error);
     }
+  }
+  static async deleteSparepart(id) {
+    const response = await fetch(Endpoint.detailSparepart(id), {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      const Errordata = await response.json();
+      throw new Error(Errordata.payload.message);
+    }
+    const data = await response.json();
+    console.log('delete sparepart: ', data);
+    return data.payload.data;
   }
 
   /* history penjualan */

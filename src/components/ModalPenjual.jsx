@@ -20,7 +20,7 @@ const PenjualanModal = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-base-100 rounded-lg p-6 w-11/12 md:w-1/3">
         <h2 className="text-2xl font-semibold mb-4">Add New Sale</h2>
-        
+
         <div className="mb-4">
           <label className="label">
             <span className="label-text">Customer</span>
@@ -102,10 +102,7 @@ const PenjualanModal = ({
         </div>
 
         <div className="flex justify-end">
-          <button
-            onClick={onClose}
-            className="mr-2 btn btn-error"
-          >
+          <button onClick={onClose} className="mr-2 btn btn-error">
             Cancel
           </button>
           <button

@@ -13,34 +13,34 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
 
-  // Menangkap token dari URL setelah callback OAuth
+  // Capture token from URL after OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    const id = params.get('id_user'); // Tangkap ID pengguna dari URL
+    const id = params.get('id_user'); // Capture user ID from URL
 
     if (token) {
-      // Simpan token ke localStorage
+      // Save token to localStorage
       localStorage.setItem('token', token);
-      localStorage.setItem('id_user', id); // Simpan ID pengguna ke localStorage
+      localStorage.setItem('id_user', id); // Save user ID to localStorage
 
-      // Simpan data autentikasi di konteks
+      // Save authentication data in context
       saveAuthData(id, token);
-      navigate('/kategori'); // Arahkan ke halaman kategori
+      navigate('/kategori'); // Redirect to categories page
     }
   }, [navigate, saveAuthData]);
 
   const mutation = useMutation({
     mutationFn: (credentials) => API_Source.login(credentials.username, credentials.password),
     onSuccess: (data) => {
-      const token = data.token; // Ambil token dari respons
-      const id = data.id; // Ambil ID pengguna dari respons
+      const token = data.token; // Get token from response
+      const id = data.id; // Get user ID from response
       if (token && id) {
-        // Simpan token ke localStorage
+        // Save token to localStorage
         localStorage.setItem('token', token);
-        // Simpan data autentikasi di konteks
+        // Save authentication data in context
         saveAuthData(id, token);
-        navigate('/kategori'); // Arahkan ke halaman kategori setelah login
+        navigate('/kategori'); // Redirect to categories page after login
       } else {
         console.error('Token or ID is undefined');
       }
@@ -56,30 +56,38 @@ export const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
+    <div className="flex items-center justify-center min-h-screen">
       <ToastContainer />
-      <div className="w-full max-w-md p-6 bg-700 rounded-lg shadow-md">
+      <div className="w-full max-w-md p-6 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center mb-4">Welcome Back!</h1>
         <p className="text-center mb-6">Please log in to your account</p>
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Username"
-              className="input input-bordered w-full"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+            <label className="input input-bordered flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="h-4 w-4 opacity-70"
+              >
+                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Username"
+                className="grow"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </label>
           </div>
-          <div className="mb-4">
-            <ShowPassword
-              label="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <ShowPassword
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
           <button
             type="submit"
             className={`btn btn-primary w-full ${mutation.isLoading ? 'loading' : ''}`}
@@ -89,25 +97,33 @@ export const Login = () => {
           </button>
           {mutation.isError && (
             <div className="mt-4">
-              <div className="alert alert-error">{mutation.error.message}</div>
+              <div role="alert" className="alert alert-error">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{mutation.error}</span>
+              </div>
             </div>
           )}
         </form>
         <div className="flex justify-center mt-4">
-          <a
-            href="http://localhost:4000/user/auth/google"
-            className="btn btn-outline"
-          >
-            <img
-              src="/icons8-google.svg"
-              alt="Google Logo"
-              className="w-5 h-5 mr-2"
-            />
+          <a href="http://localhost:4000/user/auth/google" className="btn btn-outline">
+            <img src="/icons8-google.svg" alt="Google Logo" className="w-5 h-5 mr-2" />
             Login with Google
           </a>
         </div>
         <p className="text-center mt-4">
-          Don't have an account? <Link to="/user/signup" className="text-blue-500">Sign Up</Link>
+          Don't have an account? <Link to="/user/signup">Sign Up</Link>
         </p>
       </div>
     </div>

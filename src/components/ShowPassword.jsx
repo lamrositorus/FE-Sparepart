@@ -21,7 +21,7 @@ const ShowPassword = ({ label, value, onChange, required }) => {
           value={value}
           onChange={onChange}
           required={required}
-          className="input input-bordered w-full "
+          className="input input-bordered w-full"
           placeholder={label}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

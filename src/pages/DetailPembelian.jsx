@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../components/Rupiah';
 import { API_Source } from '../global/Apisource';
-import { FaTag, FaUser , FaCalendarAlt, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
+import { FaTag, FaUser, FaCalendarAlt, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
 import { format } from 'date-fns';
 import Breadcrumb from '../components/BreadCumb'; // Importing Breadcrumb component
 import StatusIcon from '../components/StatusIcon'; // Import the StatusIcon component
@@ -46,9 +46,7 @@ export const DetailPembelian = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen text-red-500">
-        Error: {error.message}
-      </div>
+      <div className="flex justify-center items-center h-screen text-red-500">Error: {error}</div>
     ); // Display error message
   }
 
@@ -93,7 +91,7 @@ export const DetailPembelian = () => {
                 <span className="ml-4">{sparepartName}</span>
               </li>
               <li className="flex items-center">
-                <FaUser  className="mr-2 text-blue-500" />
+                <FaUser className="mr-2 text-blue-500" />
                 <strong>Nama Pemasok:</strong>
                 <span className="ml-4">{pemasokName}</span>
               </li>

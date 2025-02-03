@@ -21,7 +21,7 @@ const PembelianModal = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-base-100 rounded-lg p-6 w-11/12 md:w-1/3">
         <h2 className="text-2xl font-semibold mb-4">Add New Purchase</h2>
-        
+
         <div className="mb-4">
           <label className="label">
             <span className="label-text">Pemasok</span>
@@ -113,10 +113,7 @@ const PembelianModal = ({
           >
             Add Purchase
           </button>
-          <button
-            onClick={onClose}
-            className="btn btn-error"
-          >
+          <button onClick={onClose} className="btn btn-error">
             Cancel
           </button>
         </div>

@@ -2,30 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
 import { useAuth } from '../context/AuthContext';
 import {
-  Container,
-  Typography,
+
   Box,
-  Avatar,
-  Paper,
+
   CircularProgress,
   Alert,
-  Grid,
-  Tabs,
-  Tab,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { FaEdit, FaChartLine, FaImages, FaUserCircle } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import styled from 'styled-components';
 
 // Import dan register modul Chart.js yang diperlukan
 import {
@@ -36,36 +25,14 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { formatMonth } from '../components/Rupiah'; // Import formatMonth
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Styled Components
-const ProfileCard = styled(Paper)`
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  background: #1f2937; /* Dark background */
-`;
 
-const ProfileAvatar = styled(Avatar)`
-  width: 150px;
-  height: 150px;
-  margin-bottom: 1rem;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-`;
-
-const CarouselContainer = styled(Box)`
-  margin-top: 2rem;
-  padding: 1rem;
-  background: #374151; /* Darker background */
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
 
 export const Profil = () => {
   const { id } = useAuth();
@@ -86,8 +53,8 @@ export const Profil = () => {
         const data = await API_Source.getUserProfil(id);
         setPengguna(data);
       } catch (err) {
-        setError(err.message || 'Terjadi kesalahan saat memuat profil.');
-        toast.error('Gagal memuat profil!');
+        setError(err.message || 'Terjadi kesalahan saat memuat profil.');        
+        toast.error(err);
       } finally {
         setLoading(false);
       }
@@ -115,9 +82,7 @@ export const Profil = () => {
     }
   }, [tabValue]);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+
 
   const handleEditDialogOpen = () => {
     setOpenEditDialog(true);
@@ -151,22 +116,22 @@ export const Profil = () => {
         label: 'Aktivitas',
         data: [12, 19, 3, 5, 2, 3],
         borderColor: '#3f51b5',
-        fill: false
-      }
-    ]
+        fill: false,
+      },
+    ],
   };
 
   // Jika tab Statistik aktif, persiapkan data grafik berdasarkan statistik API
   let statisticsChartData = defaultChartData;
   if (tabValue === 1 && !statsLoading && !statsError && statistics.length > 0) {
     const sortedStats = [...statistics].sort((a, b) => parseInt(a.bulan) - parseInt(b.bulan));
-    const labels = sortedStats.map(item => {
+    const labels = sortedStats.map((item) => {
       const monthIndex = parseInt(item.bulan) - 1; // Konversi bulan ke index
       return formatMonth(monthIndex + 1); // Menggunakan formatMonth untuk mendapatkan nama bulan
     });
-    const totalPenjualanData = sortedStats.map(item => parseFloat(item.total_penjualan));
-    const totalKeuntunganData = sortedStats.map(item => parseFloat(item.total_keuntungan));
-    const jumlahTransaksiData = sortedStats.map(item => parseInt(item.jumlah_transaksi));
+    const totalPenjualanData = sortedStats.map((item) => parseFloat(item.total_penjualan));
+    const totalKeuntunganData = sortedStats.map((item) => parseFloat(item.total_keuntungan));
+    const jumlahTransaksiData = sortedStats.map((item) => parseInt(item.jumlah_transaksi));
 
     statisticsChartData = {
       labels,
@@ -177,7 +142,7 @@ export const Profil = () => {
           borderColor: 'rgba(75,192,192,1)',
           backgroundColor: 'rgba(75,192,192,0.2)',
           fill: false,
-          yAxisID: 'y-axis-1'
+          yAxisID: 'y-axis-1',
         },
         {
           label: 'Total Keuntungan',
@@ -185,7 +150,7 @@ export const Profil = () => {
           borderColor: 'rgba(153,102,255,1)',
           backgroundColor: 'rgba(153,102,255,0.2)',
           fill: false,
-          yAxisID: 'y-axis-1'
+          yAxisID: 'y-axis-1',
         },
         {
           label: 'Jumlah Transaksi',
@@ -193,9 +158,9 @@ export const Profil = () => {
           borderColor: 'rgba(255,159,64,1)',
           backgroundColor: 'rgba(255,159,64,0.2)',
           fill: false,
-          yAxisID: 'y-axis-2'
-        }
-      ]
+          yAxisID: 'y-axis-2',
+        },
+      ],
     };
   }
 
@@ -205,19 +170,19 @@ export const Profil = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
       },
       tooltip: {
         callbacks: {
-          label: function(tooltipItem) {
+          label: function (tooltipItem) {
             return `${tooltipItem.dataset.label}: ${tooltipItem.raw.toLocaleString()}`; // Format angka
-          }
-        }
+          },
+        },
       },
       title: {
         display: true,
-        text: 'Statistik Penjualan Per Bulan'
-      }
+        text: 'Statistik Penjualan Per Bulan',
+      },
     },
     scales: {
       'y-axis-1': {
@@ -226,158 +191,148 @@ export const Profil = () => {
         ticks: {
           callback: function (value) {
             return value.toLocaleString(); // Format angka
-          }
-        }
+          },
+        },
       },
       'y-axis-2': {
         type: 'linear',
         position: 'right',
         grid: {
-          drawOnChartArea: false
+          drawOnChartArea: false,
         },
         ticks: {
           callback: function (value) {
             return value.toLocaleString(); // Format angka
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   };
 
-  // Settings untuk carousel
-  const carouselSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1, // Menampilkan satu gambar pada perangkat mobile
-    slidesToScroll: 1
-  };
+
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <div className="container mx-auto px-4 py-8">
       <ToastContainer />
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <ProfileCard className="bg-gray-800 text-white">
-          <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
-            <ProfileAvatar src={pengguna.profile_picture} alt="Profil">
-              {!pengguna.profile_picture && <FaUserCircle size={80} />}
-            </ProfileAvatar>
-
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-              {pengguna.username}
-            </Typography>
-
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<FaEdit />}
-              onClick={handleEditDialogOpen}
-              sx={{ mb: 3 }}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Edit Profil
-            </Button>
-
-            <Tabs value={tabValue} onChange={handleTabChange} centered className="bg-gray-700">
-              <Tab label="Informasi" icon={<FaUserCircle />} />
-              <Tab label="Statistik" icon={<FaChartLine />} />
-              <Tab label="Galeri" icon={<FaImages />} />
-            </Tabs>
-
-            <Box sx={{ mt: 3, width: '100%' }}>
-              {tabValue === 0 && (
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <div className="stat">
-                      <div className="stat-title">Email</div>
-                      <div className="stat-value">{pengguna.email}</div>
-                    </div>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <div className="stat">
-                      <div className="stat-title">Role</div>
-                      <div className="stat-value">{pengguna.role}</div>
-                    </div>
-                  </Grid>
-                </Grid>
-              )}
-
-              {tabValue === 1 && (
-                <Box sx={{ height: '400px' }}> {/* Menentukan tinggi untuk grafik */}
-                  <Typography variant="h6" gutterBottom>
-                    Statistik Penjualan
-                  </Typography>
-                  {statsLoading ? (
-                    <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-                      <CircularProgress />
-                    </Box>
-                  ) : statsError ? (
-                    <Alert severity="error">{statsError}</Alert>
-                  ) : (
-                    <Line data={statisticsChartData} options={chartOptions} key="chart-statistics" />
-                  )}
-                </Box>
-              )}
-
-              {tabValue === 2 && (
-                <div className="carousel carousel-center bg-neutral rounded-box max-w-md space-x-4 p-4">
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1559703248-dcaaec9fab78.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1565098772267-60af42b81ef2.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1572635148818-ef6fd45eb394.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1494253109108-2e30c049369b.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1550258987-190a2d41a8ba.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1559181567-c3190ca9959b.webp"
-                    className="rounded-box" />
-                </div>
-                <div className="carousel-item">
-                  <img
-                    src="https://img.daisyui.com/images/stock/photo-1601004890684-d8cbf643f5f2.webp"
-                    className="rounded-box" />
+        {/* Profile Card */}
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <div className="flex flex-col items-center text-center">
+              {/* Avatar */}
+              <div className="avatar">
+                <div className="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <img src={pengguna.profile_picture} alt="Profil" />
+                  {!pengguna.profile_picture && <FaUserCircle className="w-full h-full" />}
                 </div>
               </div>
-              )}
-            </Box>
-          </Box>
-        </ProfileCard>
+
+              {/* Nama Pengguna */}
+              <h1 className="text-3xl font-bold mt-4">{pengguna.username}</h1>
+
+              {/* Tombol Edit */}
+              <button 
+                className="btn btn-primary mt-4"
+                onClick={handleEditDialogOpen}
+              >
+                <FaEdit className="mr-2" /> Edit Profil
+              </button>
+
+              {/* Tabs */}
+              <div className="tabs tabs-boxed bg-base-200 mt-6">
+                <button 
+                  className={`tab ${tabValue === 0 ? 'tab-active' : ''}`}
+                  onClick={() => setTabValue(0)}
+                >
+                  <FaUserCircle className="mr-2" /> Informasi
+                </button>
+                <button
+                  className={`tab ${tabValue === 1 ? 'tab-active' : ''}`}
+                  onClick={() => setTabValue(1)}
+                >
+                  <FaChartLine className="mr-2" /> Statistik
+                </button>
+                <button
+                  className={`tab ${tabValue === 2 ? 'tab-active' : ''}`}
+                  onClick={() => setTabValue(2)}
+                >
+                  <FaImages className="mr-2" /> Galeri
+                </button>
+              </div>
+
+              {/* Konten Tab */}
+              <div className="w-full mt-6">
+                {/* Tab Informasi */}
+                {tabValue === 0 && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="stats shadow">
+                      <div className="stat">
+                        <div className="stat-title">Email</div>
+                        <div className="stat-value text-lg">{pengguna.email}</div>
+                      </div>
+                    </div>
+                    <div className="stats shadow">
+                      <div className="stat">
+                        <div className="stat-title">Role</div>
+                        <div className="stat-value text-lg">{pengguna.role}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab Statistik */}
+                {tabValue === 1 && (
+                  <div className="h-96">
+                    <h2 className="text-xl font-semibold mb-4">Statistik Penjualan</h2>
+                    {statsLoading ? (
+                      <div className="flex justify-center items-center h-64">
+                        <span className="loading loading-spinner loading-lg"></span>
+                      </div>
+                    ) : statsError ? (
+                      <div className="alert alert-error">{statsError}</div>
+                    ) : (
+                      <Line data={statisticsChartData} options={chartOptions} />
+                    )}
+                  </div>
+                )}
+
+                {/* Tab Galeri */}
+                {tabValue === 2 && (
+                  <div className="carousel rounded-box">
+                    {[1, 2, 3, 4, 5, 6].map((item) => (
+                      <div key={item} className="carousel-item w-full">
+                        <img
+                          src={`https://plus.unsplash.com/premium_photo-1677009835565-1f6eb4cf4f63?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`}
+                          className="w-full"
+                          alt={`Galeri ${item}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
-      <Dialog open={openEditDialog} onClose={handleEditDialogClose}>
-        <DialogTitle>Edit Profil</DialogTitle>
-        <DialogContent>
-          <Typography>Fitur edit profil akan segera hadir!</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditDialogClose} color="primary">
-            Tutup
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+      {/* Modal Edit */}
+      <dialog className="modal" open={openEditDialog}>
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Edit Profil</h3>
+          <p className="py-4">Fitur edit profil akan segera hadir!</p>
+          <div className="modal-action">
+            <button className="btn" onClick={handleEditDialogClose}>
+              Tutup
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </div>
   );
+
 };

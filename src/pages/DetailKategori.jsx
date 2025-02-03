@@ -68,10 +68,7 @@ export const DetailKategori = () => {
     return (
       <div className="flex justify-center items-center h-screen text-error">
         <p>Error: {error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="btn btn-error mt-2"
-        >
+        <button onClick={() => window.location.reload()} className="btn btn-error mt-2">
           Coba Lagi
         </button>
       </div>
@@ -98,36 +95,43 @@ export const DetailKategori = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Breadcrumb links={breadcrumbLinks}  />
-      <h1 className="text-4xl font-bold text-center mb-6 text-secondary">Detail Kategori</h1>
+      <Breadcrumb links={breadcrumbLinks} />
+      <h1 className="text-4xl font-bold text-center mb-6 ">Detail Kategori</h1>
       <motion.div
         className="card bg-base-100 shadow-xl p-6 hover:shadow-2xl"
         transition={{ type: 'spring', stiffness: 300 }}
       >
         <div className="flex items-center mb-2">
           <FaTag className="text-gray-500 mr-2" />
-          <p><strong>ID Kategori:</strong> {kategoriDetail.id_kategori}</p>
+          <p>
+            <strong>ID Kategori:</strong> {kategoriDetail.id_kategori}
+          </p>
         </div>
         <div className="flex items-center mb-2">
           <FaTag className="text-gray-500 mr-2" />
-          <p><strong>Nama Kategori:</strong> {kategoriDetail.nama_kategori}</p>
+          <p>
+            <strong>Nama Kategori:</strong> {kategoriDetail.nama_kategori}
+          </p>
         </div>
         <div className="flex items-center mb-2">
           <FaInfoCircle className="text-gray-500 mr-2" />
-          <p><strong>Deskripsi:</strong> {kategoriDetail.deskripsi}</p>
+          <p>
+            <strong>Deskripsi:</strong> {kategoriDetail.deskripsi}
+          </p>
         </div>
         <div className="flex items-center mb-2">
           <FaCalendarAlt className="text-gray-500 mr-2" />
-          <p><strong>Created At:</strong> {format(new Date(kategoriDetail.created_at), 'dd/MM/yyyy')}</p>
+          <p>
+            <strong>Created At:</strong> {format(new Date(kategoriDetail.created_at), 'dd/MM/yyyy')}
+          </p>
         </div>
         <div className="flex items-center mb-2">
           <FaCalendarAlt className="text-gray-500 mr-2" />
-          <p><strong>Updated At:</strong> {format(new Date(kategoriDetail.updated_at), 'dd/MM/yyyy')}</p>
+          <p>
+            <strong>Updated At:</strong> {format(new Date(kategoriDetail.updated_at), 'dd/MM/yyyy')}
+          </p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="btn btn-error mt-4 flex items-center"
-        >
+        <button onClick={handleDelete} className="btn btn-error mt-4 flex items-center">
           <FaTrash className="mr-2" /> Delete Category
         </button>
       </motion.div>
@@ -143,7 +147,7 @@ export const DetailKategori = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
-              <Link to={`/kategori/${category.id_kategori}`} className="text-secondary">
+              <Link to={`/kategori/${category.id_kategori}`}>
                 <div className="flex items-center">
                   <FaTag className="text-gray-500 mr-2" />
                   <p className="text-lg font-semibold">{category.nama_kategori}</p>
@@ -156,3 +160,5 @@ export const DetailKategori = () => {
     </motion.div>
   );
 };
+
+export default DetailKategori;

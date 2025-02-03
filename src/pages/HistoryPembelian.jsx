@@ -14,9 +14,10 @@ export const HistoryPembelian = () => {
   const [error, setError] = useState(null);
   const [searchPemasok, setSearchPemasok] = useState('');
   const [searchSparepart, setSearchSparepart] = useState('');
-  const [filterDateRange, setFilterDateRange] = useState([null, null]);
+  const [filterDateRange, setFilterDateRange] = useState([null, null]); // State for date filter
   const [dateFilter, setDateFilter] = useState(null);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemPerpages = 10;
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,7 +31,7 @@ export const HistoryPembelian = () => {
         setSpareparts(sparepartsData);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError(error.message);
+        setError(error);
       } finally {
         setLoading(false);
       }
@@ -51,40 +52,64 @@ export const HistoryPembelian = () => {
     );
   }
 
-  const pemasokMap = Object.fromEntries(pemasok.map((item) => [item.id_pemasok, item.nama_pemasok]));
-  const sparepartMap = Object.fromEntries(spareparts.map((item) => [item.id_sparepart, item.nama_sparepart]));
+  const pemasokMap = Object.fromEntries(
+    pemasok.map((item) => [item.id_pemasok, item.nama_pemasok])
+  );
+  const sparepartMap = Object.fromEntries(
+    spareparts.map((item) => [item.id_sparepart, item.nama_sparepart])
+  );
 
-  const filteredData = historyData.filter((item) => {
-    const pemasokName = pemasokMap[item.id_pemasok] || '';
-    const sparepartName = sparepartMap[item.id_sparepart] || '';
-    return (
-      pemasokName.toLowerCase().includes(searchPemasok.toLowerCase()) &&
-      sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
-    );
-  }).filter((item) => {
-    if (!filterDateRange[0] || !filterDateRange[1]) return true;
-    const itemDate = new Date(item.tanggal);
-    return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
-  });
+  const filteredData = historyData
+    .filter((item) => {
+      const pemasokName = pemasokMap[item.id_pemasok] || '';
+      const sparepartName = sparepartMap[item.id_sparepart] || '';
+      return (
+        pemasokName.toLowerCase().includes(searchPemasok.toLowerCase()) &&
+        sparepartName.toLowerCase().includes(searchSparepart.toLowerCase())
+      );
+    })
+    .filter((item) => {
+      if (!filterDateRange[0] || !filterDateRange[1]) return true; // If no date filter, show all
+      const itemDate = new Date(item.tanggal);
+      return itemDate >= filterDateRange[0] && itemDate <= filterDateRange[1];
+    });
 
-  if (dateFilter === 'latest') filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-  if (dateFilter === 'oldest') filteredData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+  // Sort data based on date filter
+  if (dateFilter === 'latest') {
+    filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+  } else if (dateFilter === 'oldest') {
+    filteredData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+  }
 
-  const totalPembelian = filteredData.reduce((total, item) => total + parseFloat(item.total_harga || 0), 0);
-
+  const sortOptions = [
+    { value: '', label: 'Semua' },
+    { value: 'latest', label: 'Terbaru' },
+    { value: 'oldest', label: 'Terlama' },
+  ];
+  //calculation pages
+  const indexLastItem = currentPage * itemPerpages;
+  const indexFirstItem = indexLastItem - itemPerpages;
+  const currentItems = filteredData.slice(indexFirstItem, indexLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemPerpages);
   return (
-    <div className="p-6  text-white rounded-lg">
-      <h1 className="text-3xl font-bold mb-4">History Pembelian</h1>
-      <SearchFilter searchPemasok={searchPemasok} setSearchPemasok={setSearchPemasok} searchSparepart={searchSparepart} setSearchSparepart={setSearchSparepart} />
+    <div className="p-6">
+      <h1 className="text-4xl font-bold mb-6 text-center">History Pembelian</h1>
+      <SearchFilter
+        searchPemasok={searchPemasok}
+        setSearchPemasok={setSearchPemasok}
+        searchSparepart={searchSparepart}
+        setSearchSparepart={setSearchSparepart}
+      />
       <DateFilter filterDateRange={filterDateRange} setFilterDateRange={setFilterDateRange} />
-      <SelectFilter options={[{ value: '', label: 'Semua' }, { value: 'latest', label: 'Terbaru' }, { value: 'oldest', label: 'Terlama' }]} selectedValue={dateFilter} onChange={setDateFilter} />
+      <SelectFilter options={sortOptions} selectedValue={dateFilter} onChange={setDateFilter} />
       {filteredData.length === 0 ? (
         <div className="alert alert-info mt-4">
           <span>Belum ada data history pembelian yang tersedia.</span>
         </div>
       ) : (
+        <>
         <div className="overflow-x-auto mt-4">
-          <table className="table  w-full">
+          <table className="table w-full">
             <thead>
               <tr>
                 <th>ID History Pembelian</th>
@@ -97,7 +122,7 @@ export const HistoryPembelian = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item) => (
+              {currentItems.map((item) => (
                 <tr key={item.id_history_pembelian}>
                   <td>{item.id_history_pembelian}</td>
                   <td>{item.id_pembelian}</td>
@@ -110,8 +135,50 @@ export const HistoryPembelian = () => {
               ))}
             </tbody>
           </table>
-          <div className="mt-4 font-bold text-lg">Total Pembelian: {formatPrice(totalPembelian)}</div>
         </div>
+        
+        <div className="flex justify-center mt-4">
+        <div className="join">
+          <button
+            className="join-item btn"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+          >
+            «
+          </button>
+          <button
+            className="join-item btn"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            ‹
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              className={`join-item btn ${currentPage === i + 1 ? 'btn-active' : ''}`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            className="join-item btn"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            ›
+          </button>
+          <button
+            className="join-item btn"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            »
+          </button>
+        </div>
+      </div>
+      </>
       )}
     </div>
   );

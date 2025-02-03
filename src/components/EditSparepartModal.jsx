@@ -31,7 +31,7 @@ const EditSparepartModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onUpdateSparepart({
-      id: sparepartData.id_sparepart,
+      id_sparepart: sparepartData.id_sparepart,
       nama_sparepart: namaSparepart,
       harga,
       margin,
@@ -47,13 +47,18 @@ const EditSparepartModal = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      {' '}
       <div className="bg-base-100 rounded-lg p-6 w-11/12 md:w-1/3">
-        <h2 className="text-2xl font-semibold mb-4">Edit Sparepart</h2>
+        {' '}
+        <h2 className="text-2xl font-semibold mb-4">Edit Sparepart</h2>{' '}
         <form onSubmit={handleSubmit}>
+          {' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Nama Sparepart</span>
-            </label>
+              {' '}
+              <span className="label-text">Nama Sparepart</span>{' '}
+            </label>{' '}
             <input
               type="text"
               value={namaSparepart}
@@ -61,12 +66,14 @@ const EditSparepartModal = ({
               className="input input-bordered w-full"
               placeholder="Enter spare part name"
               required
-            />
-          </div>
+            />{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Harga</span>
-            </label>
+              {' '}
+              <span className="label-text">Harga</span>{' '}
+            </label>{' '}
             <input
               type="number"
               value={harga}
@@ -74,12 +81,14 @@ const EditSparepartModal = ({
               className="input input-bordered w-full"
               placeholder="Enter price"
               required
-            />
-          </div>
+            />{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Margin</span>
-            </label>
+              {' '}
+              <span className="label-text">Margin</span>{' '}
+            </label>{' '}
             <input
               type="number"
               value={margin}
@@ -87,12 +96,14 @@ const EditSparepartModal = ({
               className="input input-bordered w-full"
               placeholder="Enter margin"
               required
-            />
-          </div>
+            />{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Stok</span>
-            </label>
+              {' '}
+              <span className="label-text">Stok</span>{' '}
+            </label>{' '}
             <input
               type="number"
               value={stok}
@@ -100,70 +111,79 @@ const EditSparepartModal = ({
               className="input input-bordered w-full"
               placeholder="Enter stock quantity"
               required
-            />
-          </div>
+            />{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Deskripsi</span>
-            </label>
+              {' '}
+              <span className="label-text">Deskripsi</span>{' '}
+            </label>{' '}
             <textarea
               value={deskripsi}
               onChange={(e) => setDeskripsi(e.target.value)}
               className="textarea textarea-bordered w-full"
               placeholder="Enter description"
               required
-            />
-          </div>
+            />{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Kategori</span>
-            </label>
+              {' '}
+              <span className="label-text">Kategori</span>{' '}
+            </label>{' '}
             <select
               value={selectedKategori}
               onChange={(e) => setSelectedKategori(e.target.value)}
               className="select select-bordered w-full"
               required
             >
-              <option value="">Select category</option>
+              {' '}
+              <option value="">Select category</option>{' '}
               {kategoriList.map((kategori) => (
                 <option key={kategori.id_kategori} value={kategori.id_kategori}>
-                  {kategori.nama_kategori}
+                  {' '}
+                  {kategori.nama_kategori}{' '}
                 </option>
-              ))}
-            </select>
-          </div>
+              ))}{' '}
+            </select>{' '}
+          </div>{' '}
           <div className="mb-4">
+            {' '}
             <label className="label">
-              <span className="label-text">Pemasok</span>
-            </label>
+              {' '}
+              <span className="label-text">Pemasok</span>{' '}
+            </label>{' '}
             <select
               value={selectedPemasok}
               onChange={(e) => setSelectedPemasok(e.target.value)}
               className="select select-bordered w-full"
               required
             >
-              <option value="">Select supplier</option>
+              {' '}
+              <option value="">Select supplier</option>{' '}
               {pemasokList.map((pemasok) => (
                 <option key={pemasok.id_pemasok} value={pemasok.id_pemasok}>
-                  {pemasok.nama_pemasok}
+                  {' '}
+                  {pemasok.nama_pemasok}{' '}
                 </option>
-              ))}
-            </select>
-          </div>
+              ))}{' '}
+            </select>{' '}
+          </div>{' '}
           <div className="flex justify-between">
+            {' '}
             <button type="submit" className="btn btn-primary">
-              Update Sparepart
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+              {' '}
+              Update Sparepart{' '}
+            </button>{' '}
+            <button type="button" onClick={onClose} className="btn btn-secondary">
+              {' '}
+              Cancel{' '}
+            </button>{' '}
+          </div>{' '}
+        </form>{' '}
+      </div>{' '}
     </div>
   );
 };

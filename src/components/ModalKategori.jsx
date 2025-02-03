@@ -47,10 +47,7 @@ const KategoriModal = ({ isOpen, onClose, onAddKategori, kategoriData, setKatego
           >
             Add Kategori
           </button>
-          <button
-            onClick={onClose}
-            className="btn btn-error"
-          >
+          <button onClick={onClose} className="btn btn-error">
             Cancel
           </button>
         </div>

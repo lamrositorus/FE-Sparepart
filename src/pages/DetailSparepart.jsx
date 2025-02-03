@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { API_Source } from '../global/Apisource';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { FaBox, FaInfoCircle, FaTag, FaCalendarAlt, FaUser , FaStar } from 'react-icons/fa'; // Importing icons
+import { FaBox, FaInfoCircle, FaTag, FaCalendarAlt, FaUser, FaStar } from 'react-icons/fa'; // Importing icons
 import { formatPrice } from '../components/Rupiah';
 
 export const DetailSparepart = () => {
@@ -122,7 +122,7 @@ export const DetailSparepart = () => {
             </p>
           </div>
           <div className="flex items-center mb-2">
-            <FaUser  className="text-gray-500 mr-1" />
+            <FaUser className="text-gray-500 mr-1" />
             <p>
               <strong>Supplier:</strong> {getSupplierName(sparepart.id_pemasok)}
             </p>
