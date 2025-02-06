@@ -1,6 +1,40 @@
 import { Endpoint } from './Enpoint';
 
 export class API_Source {
+  /* dashboard */
+  static async getDashboard(year, period){
+    const response = await fetch(`${Endpoint.dashboard}?year=${year}&period=${period}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
+    }
+    const data = await response.json();
+    return data.payload.data;
+  }
+  /* aktivitas */
+  static async getActivities() {
+    const response = await fetch(Endpoint.aktivitas, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
+    }
+    const data = await response.json();
+    return data.payload.data;
+  }
   /* users */
   static async login(username, password) {
     try {
@@ -92,8 +126,8 @@ export class API_Source {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
-      }
+        const errorMessage = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);      }
 
       const data = await response.json();
       console.log('Kategori data:', data);
@@ -116,8 +150,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
-      }
+        const errorMessage = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);      }
       const data = await response.json();
       return data.payload.data; // Mengembalikan data dari respons
     } catch (error) {
@@ -136,8 +170,8 @@ export class API_Source {
     });
     if (!response.ok) {
       const Errordata = await response.json();
-      throw new Error(Errordata.payload.message);
-    }
+      const errorMessage = Errordata.payload?.message || Errordata.message || 'Unknown error occurred';
+      throw new Error(errorMessage);    }
     const data = await response.json();
     console.log('detail kategori: ', data);
     return data.payload.data;
@@ -152,7 +186,8 @@ export class API_Source {
     });
     if (!response.ok) {
       const Errordata = await response.json();
-      throw new Error(Errordata.payload.message);
+      const errorMessage = Errordata.payload?.message || Errordata.message || 'Unknown error occurred';
+      throw new Error(errorMessage);    
     }
     const data = await response.json();
     console.log('delete kategori: ', data);
@@ -170,8 +205,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
-      }
+        const errorMessage = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(errorMessage);      }
       const data = await response.json();
       return data.payload.data; // Mengembalikan data dari respons
     } catch (error) {
@@ -542,7 +577,8 @@ export class API_Source {
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.payload.message);
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
     }
     const data = await response.json();
     return data.payload.data;
@@ -577,9 +613,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage =
-          errorData.payload?.message || errorData.message || 'Unknown error occurred';
-        throw new Error(errorMessage);
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       console.log('Sparepart data:', data);
@@ -599,8 +634,9 @@ export class API_Source {
       },
     });
     if (!response.ok) {
-      const Errordata = await response.json();
-      throw new Error(Errordata.payload.message);
+      const errorData = await response.json();
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
     }
     const data = await response.json();
     console.log('detail sparepart: ', data);
@@ -636,9 +672,9 @@ export class API_Source {
         }),
       });
       if (!response.ok) {
-        const Errordata = await response.json();
-        console.log('error', Errordata.payload.message);
-        throw new Error(Errordata.payload.message);
+        const errorData = await response.json();
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       console.log('detail sparepart: ', data);
@@ -679,7 +715,8 @@ export class API_Source {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.payload.message);
+        const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+        throw new Error(error);
       }
       const data = await response.json();
       return data.payload.data; // Mengembalikan data dari respons
@@ -764,5 +801,36 @@ export class API_Source {
       const errorData = error.message;
       throw errorData; // Melemparkan error agar bisa ditangani di tempat lain
     }
+  }
+
+  static async exportHistoryPenjualan(){
+    const response = await fetch(Endpoint.exportHistoryPenjualan, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
+    }
+    return response.blob();
+  }
+  static async exportHistoryPembelian(){
+    const response = await fetch(Endpoint.exportHistoryPembelian, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      const error = errorData.payload?.message || errorData.message || 'Unknown error occurred';
+      throw new Error(error);
+    }
+    return response.blob();
   }
 }

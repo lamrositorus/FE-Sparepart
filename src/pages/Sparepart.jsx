@@ -163,7 +163,7 @@ export const Sparepart = () => {
       setEditModalOpen(false);
       setConfirmModalOpen(false);
     } catch (error) {
-      toast.error(error.message || 'Gagal mengupdate sparepart');
+      toast.error(error?.message || 'Gagal mengupdate sparepart');
     }
   };
 
@@ -246,6 +246,7 @@ export const Sparepart = () => {
                     <th>Deskripsi</th>
                     <th>Harga</th>
                     <th>Margin (%)</th>
+                    <th>Harga jual</th>
                     <th>Stok</th>
                     <th>Tanggal Masuk</th>
                     <th>Aksi</th>
@@ -264,9 +265,9 @@ export const Sparepart = () => {
                       <td>{sparepart.nama_sparepart}</td>
                       <td>{sparepart.deskripsi}</td>
                       <td>{formatPrice(sparepart.harga)}</td>
-                      <td>{sparepart.margin}</td>
+                      <td>{(sparepart.margin * 100).toFixed(0)}%</td>                      <td>{formatPrice(sparepart.harga_jual)}</td>
                       <td>{sparepart.stok}</td>
-                      <td>{format(new Date(sparepart.updated_at), 'dd/MM/yyyy')}</td>
+                      <td>{format(new Date(sparepart.tanggal_masuk), 'dd/MM/yyyy')}</td>
                       <td>
                         <button
                           onClick={() => {

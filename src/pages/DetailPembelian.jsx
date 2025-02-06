@@ -56,7 +56,7 @@ export const DetailPembelian = () => {
 
   // Dummy breadcrumb links
   const breadcrumbLinks = [
-    { label: 'Home', path: '/kategori' },
+    { label: 'Home', path: '/dashboard' },
     { label: 'Pembelian', path: '/pembelian' },
   ];
 

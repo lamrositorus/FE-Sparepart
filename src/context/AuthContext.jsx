@@ -14,6 +14,10 @@ export const AuthProvider = ({ children }) => {
     setToken(newToken);
     localStorage.setItem('token', newToken); // Save token to local storage
     localStorage.setItem('id', newId); // Save ID to local storage
+
+    setTimeout(() => {
+      clearAuthData();
+    }, 3660000);
   };
 
   const clearAuthData = () => {

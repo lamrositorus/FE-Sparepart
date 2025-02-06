@@ -10,6 +10,7 @@ import format from 'date-fns/format';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Alert } from 'antd';
 
 export const Kategori = () => {
   const [kategoriData, setKategoriData] = useState({
@@ -22,6 +23,7 @@ export const Kategori = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [actionType, setActionType] = useState('');
   const [kategoriToDelete, setKategoriToDelete] = useState(null);
+  const [showAlert, setShowAlert] = useState(false); // State untuk alert
 
   const {
     data: kategoriList = [],
@@ -37,6 +39,9 @@ export const Kategori = () => {
     if (kategoriError) {
       console.error('Error fetching categories:', kategoriError);
       toast.error(kategoriError || 'Gagal memuat kategori.');
+      setShowAlert(true); // Tampilkan alert saat terjadi kesalahan
+    } else {
+      setShowAlert(false); // Sembunyikan alert jika tidak ada kesalahan
     }
   }, [kategoriError]);
 
@@ -60,7 +65,7 @@ export const Kategori = () => {
       refetch();
     } catch (error) {
       console.error('Error adding category:', error);
-      toast.error(error || 'Gagal menambahkan kategori.');
+      toast.error(error);
     }
   };
 
@@ -82,7 +87,7 @@ export const Kategori = () => {
       setConfirmModalOpen(false);
       refetch();
     } catch (error) {
-      toast.error(error || 'Gagal memperbarui kategori');
+      toast.error(error);
     }
   };
 
@@ -94,7 +99,7 @@ export const Kategori = () => {
       refetch();
     } catch (error) {
       console.error('Error deleting category:', error);
-      toast.error(error || 'Gagal menghapus kategori.');
+      toast.error(error.message || 'Gagal menghapus kategori.');
     }
   };
 
@@ -115,8 +120,8 @@ export const Kategori = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-infinity loading-lg"></span>
       </div>
     );
   }
@@ -124,11 +129,21 @@ export const Kategori = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center ">Kategori</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center">Kategori</h1>
         <button className="btn btn-primary text-white mt-4 sm:mt-0" onClick={openAddModal}>
           Tambah Kategori
         </button>
       </div>
+      {showAlert && ( // Tampilkan alert jika ada kesalahan
+        <Alert
+          message="Kesalahan"
+          description="Gagal memuat kategori. Silakan coba lagi."
+          type="error"
+          showIcon
+          closable
+          onClose={() => setShowAlert(false)} // Sembunyikan alert saat ditutup
+        />
+      )}
       {kategoriList.length > 0 ? (
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
@@ -173,8 +188,12 @@ export const Kategori = () => {
         </motion.div>
       ) : (
         <div className="flex flex-col items-center text-center">
-          <img src="/empty-state.svg" alt="No data" className="w-48 h-48 mb-4" />
-          <h2 className="text-2xl font-bold">Belum ada data kategori.</h2>
+          <Alert
+            message="Tidak ada kategori"
+            description="Belum ada kategori yang tersedia."
+            type="info"
+            showIcon
+          />
         </div>
       )}
       <KategoriModal

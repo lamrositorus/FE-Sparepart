@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { API_Source } from '../global/Apisource';
-import { motion } from 'framer-motion';
 import PenjualanModal from '../components/ModalPenjual';
 import format from 'date-fns/format';
 import { toast, ToastContainer } from 'react-toastify';
@@ -12,8 +11,20 @@ import { Link } from 'react-router-dom';
 import { formatPrice } from '../components/Rupiah';
 import { Button, Alert } from 'antd';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { motion } from 'framer-motion'; // Import motion and AnimatePresence
 
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.5 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  exit: { opacity: 0, y: -50, transition: { duration: 0.5 } }
+};
 export const Penjualan = () => {
   const [penjualanList, setPenjualanList] = useState([]);
   const [customerMap, setCustomerMap] = useState({});
@@ -127,7 +138,9 @@ export const Penjualan = () => {
 
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen text-white">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center">
+    <span className="loading loading-infinity loading-lg"></span>
+  </div>
   }
 
   // Filter and sort the penjualanList based on search term and date range
@@ -168,7 +181,13 @@ export const Penjualan = () => {
   const currentItems = sortedPenjualanList.slice(indexFirstItem, indexLastItem);
   const totalPages = Math.ceil(sortedPenjualanList.length / itemPerPage);
   return (
-    <div className="p-6">
+    <motion.div
+      className="p-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       <ToastContainer />
       <h1 className="text-4xl font-bold mb-6 text-center">Daftar Penjualan</h1>
       <div className="mb-4 flex flex-wrap gap-4 items-center">
@@ -189,6 +208,8 @@ export const Penjualan = () => {
           <Link to={'/historypenjualan'} className="btn btn-info text-white">
             History Penjualan
           </Link>
+          
+
           <Button
             type="primary"
             onClick={() => setModalOpen(true)}
@@ -216,7 +237,7 @@ export const Penjualan = () => {
               </thead>
               <tbody>
                 {currentItems.map((item, index) => (
-                  <tr key={item.id_penjualan}>
+                  <motion.tr key={item.id_penjualan} variants={itemVariants}>
                     <td>{index + 1}</td>
                     <td>{customerMap[item.id_customer] || 'Unknown Customer'}</td>
                     <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
@@ -229,12 +250,12 @@ export const Penjualan = () => {
                         Detail
                       </Link>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
-
+  
           <div className="flex justify-center mt-4">
             <div className="join">
               <button
@@ -285,7 +306,7 @@ export const Penjualan = () => {
           showIcon
         />
       )}
-<PenjualanModal
+      <PenjualanModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onAddPenjualan={handleAddPenjualan}
@@ -294,15 +315,14 @@ export const Penjualan = () => {
         sparepartMap={sparepartMap}
         customerMap={customerMap}
       />
-
+  
       <ConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleCancelPenjualan}
         onConfirm={handleConfirmPenjualan}
         message="Are you sure you want to add this sale?"
       />
-
-    </div>
+    </motion.div>
   );
 };
 

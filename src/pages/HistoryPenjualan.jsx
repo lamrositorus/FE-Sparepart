@@ -6,7 +6,19 @@ import DateFilter from '../components/DateFilter'; // Import the DateFilter comp
 import SearchFilter from '../components/SearchFilterPenjualan'; // Import the SearchFilter component
 import { Alert } from 'antd'; // Import components from Ant Design
 import SelectFilter from '../components/SelectFilter';
+import { motion } from 'framer-motion'; // Import motion and AnimatePresence
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.5 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  exit: { opacity: 0, y: -50, transition: { duration: 0.5 } }
+};
 export const HistoryPenjualan = () => {
   const [historyData, setHistoryData] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -19,6 +31,7 @@ export const HistoryPenjualan = () => {
   const [dateFilter, setDateFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemPerpages = 10;
+  
   const fetchHistoryPenjualan = async () => {
     try {
       const data = await API_Source.getHistoryPenjualan();
@@ -48,6 +61,21 @@ export const HistoryPenjualan = () => {
       setError(error);
     }
   };
+    const handleExport = async () => {
+      try {
+        const blob = await API_Source.exportHistoryPenjualan();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'history_penjualan.csv'; // Nama file yang akan diunduh
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (error) {
+        console.error('Error exporting data:', error);
+        setError('Gagal mengekspor data');
+      }
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,7 +149,13 @@ export const HistoryPenjualan = () => {
   ];
 
   return (
-    <div className="p-6">
+    <motion.div
+      className="p-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       <h1 className="text-4xl font-bold mb-6 text-center">History Penjualan</h1>
       <div className="mb-4 flex flex-wrap gap-4 items-center">
         <SearchFilter
@@ -138,8 +172,11 @@ export const HistoryPenjualan = () => {
           placeholder="Urutkan berdasarkan tanggal"
           className="select select-bordered"
         />
+                <button className="btn btn-primary" onClick={handleExport}>
+          Ekspor Data
+        </button>
       </div>
-
+  
       {filteredData.length === 0 ? (
         <Alert
           message="Tidak ada data"
@@ -149,88 +186,88 @@ export const HistoryPenjualan = () => {
         />
       ) : (
         <>
-        <div className="overflow-x-auto">
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th>ID History Penjualan</th>
-                <th>ID Penjualan</th>
-                <th>Nama Customer</th>
-                <th>Nama Sparepart</th>
-                <th>Jumlah</th>
-                <th>Harga Beli</th>
-                <th>Harga Jual</th>
-                <th>Margin (%)</th>
-                <th>Keuntungan</th>
-                <th>Total Harga</th>
-                <th>Tanggal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.map((item) => (
-                <tr key={item.id_history_penjualan}>
-                  <td>{item.id_history_penjualan}</td>
-                  <td>{item.id_penjualan}</td>
-                  <td>{customerMap[item.id_customer] || 'Unknown Customer'}</td>
-                  <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
-                  <td>{item.jumlah}</td>
-                  <td>{formatPrice(item.harga_beli)}</td>
-                  <td>{formatPrice(item.harga_jual)}</td>
-                  <td>
-                    {(((item.harga_jual - item.harga_beli) / item.harga_jual) * 100).toFixed(2)}%
-                  </td>
-                  <td>{formatPrice(item.keuntungan)}</td>
-                  <td>{formatPrice(item.total_harga)}</td>
-                  <td>{new Date(item.tanggal).toLocaleDateString()}</td>
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th>ID History Penjualan</th>
+                  <th>ID Penjualan</th>
+                  <th>Nama Customer</th>
+                  <th>Nama Sparepart</th>
+                  <th>Jumlah</th>
+                  <th>Harga Beli</th>
+                  <th>Harga Jual</th>
+                  <th>Margin (%)</th>
+                  <th>Keuntungan</th>
+                  <th>Total Harga</th>
+                  <th>Tanggal</th>
                 </tr>
+              </thead>
+              <tbody>
+                {currentItems.map((item) => (
+                  <motion.tr key={item.id_history_penjualan} variants={itemVariants}>
+                    <td>{item.id_history_penjualan}</td>
+                    <td>{item.id_penjualan}</td>
+                    <td>{customerMap[item.id_customer] || 'Unknown Customer'}</td>
+                    <td>{sparepartMap[item.id_sparepart] || 'Unknown Sparepart'}</td>
+                    <td>{item.jumlah}</td>
+                    <td>{formatPrice(item.harga_beli)}</td>
+                    <td>{formatPrice(item.harga_jual)}</td>
+                    <td>
+                      {(((item.harga_jual - item.harga_beli) / item.harga_jual) * 100).toFixed(2)}%
+                    </td>
+                    <td>{formatPrice(item.keuntungan)}</td>
+                    <td>{formatPrice(item.total_harga)}</td>
+                    <td>{new Date(item.tanggal).toLocaleDateString()}</td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-center mt-4">
+            <div className="join">
+              <button
+                className="join-item btn"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+              >
+                «
+              </button>
+              <button
+                className="join-item btn"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  className={`join-item btn ${currentPage === i + 1 ? 'btn-active' : ''}`}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
-                <div className="flex justify-center mt-4">
-                <div className="join">
-                  <button
-                    className="join-item btn"
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                  >
-                    «
-                  </button>
-                  <button
-                    className="join-item btn"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    ‹
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                      key={i + 1}
-                      className={`join-item btn ${currentPage === i + 1 ? 'btn-active' : ''}`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button
-                    className="join-item btn"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    ›
-                  </button>
-                  <button
-                    className="join-item btn"
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                  >
-                    »
-                  </button>
-                </div>
-              </div>
-              </>
+              <button
+                className="join-item btn"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                ›
+              </button>
+              <button
+                className="join-item btn"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                »
+              </button>
+            </div>
+          </div>
+        </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

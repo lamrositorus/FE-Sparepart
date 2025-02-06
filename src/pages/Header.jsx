@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { id, clearAuthData } = useAuth();
+  const { token, clearAuthData } = useAuth();
   const navigate = useNavigate();
   const { toggleTheme, theme } = useTheme(); // Use theme context
 
@@ -24,12 +24,20 @@ const Header = () => {
   const renderMenuTabs = () => {
     return (
       <>
-        {id ? (
+        {token ? (
           <>
             <li>
               <Link
+                to="/dashboard"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
+              >
+                <FaHome className="mr-2" /> Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/kategori"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaHome className="mr-2" /> Kategori
               </Link>
@@ -37,7 +45,7 @@ const Header = () => {
             <li>
               <Link
                 to="/sparepart"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaCar className="mr-2" /> Sparepart
               </Link>
@@ -45,7 +53,7 @@ const Header = () => {
             <li>
               <Link
                 to="/pemasok"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaUser  className="mr-2" /> Pemasok
               </Link>
@@ -53,7 +61,7 @@ const Header = () => {
             <li>
               <Link
                 to="/customer"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaUser  className="mr-2" /> Customer
               </Link>
@@ -61,7 +69,7 @@ const Header = () => {
             <li>
               <Link
                 to="/pembelian"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaMoneyBillWaveAlt className="mr-2" /> Pembelian
               </Link>
@@ -69,21 +77,21 @@ const Header = () => {
             <li>
               <Link
                 to="/penjualan"
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaMoneyBillWaveAlt className="mr-2" /> Penjualan
               </Link>
             </li>
             <li>
               <Link
-                to={`/user/${id}`}
-                className="flex items-center py-2 text-gray-500 hover:text-secondary"
+                to={`/user/${token}`}
+                className="flex items-center py-2 text-gray-600 hover:text-gray-500"
               >
                 <FaUser  className="mr-2" /> Pengguna
               </Link>
             </li>
             <li>
-              <button onClick={handleLogout} className="btn btn-error btn-sm flex items-center">
+              <button onClick={handleLogout} className="flex items-center py-2 text-red-500 hover:text-red-700">
                 <FaSignOutAlt className="mr-2" /> Logout
               </button>
             </li>

@@ -15,6 +15,8 @@ import {
   HistoryPembelian,
   Profil,
   About,
+  LandingPage,
+  Dashboard,
 } from './pages';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -41,6 +43,14 @@ const App = () => {
                     <Route path="/user/signup" element={<Signup />} />
                     <Route path="/user/login" element={<Login />} />
                     {/* Rute yang dilindungi */}
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route
                       path="/kategori"
                       element={
@@ -142,6 +152,14 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <About />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/landingpages"
+                      element={
+                        <ProtectedRoute>
+                          <LandingPage />
                         </ProtectedRoute>
                       }
                     />

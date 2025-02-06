@@ -8,7 +8,7 @@ import format from 'date-fns/format';
 import { Link } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import motion from 'framer-motion';
+import { motion } from 'framer-motion'; // Import motion and AnimatePresence
 import DateFilter from '../components/DateFilter';
 import SelectFilter from '../components/SelectFilter';
 import SearchFilter from '../components/SearchFilterPembelian'; // Import the SearchFilter component
@@ -277,6 +277,7 @@ export const Pembelian = () => {
           </Button>
         </div>
       </div>
+  
       {filteredPembelianList.length === 0 ? (
         <Alert
           message="Tidak ada data"

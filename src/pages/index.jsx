@@ -1,3 +1,4 @@
+export * from './Dashboard';
 export * from './login';
 export * from './Signup';
 export * from './Kategori';
@@ -14,3 +15,4 @@ export * from './HistoryPenjualan';
 export * from './HistoryPembelian';
 export * from './Profile';
 export * from './About';
+export * from './Landing';

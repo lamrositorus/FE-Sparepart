@@ -26,7 +26,7 @@ export const Login = () => {
 
       // Save authentication data in context
       saveAuthData(id, token);
-      navigate('/kategori'); // Redirect to categories page
+      navigate('/dashboard'); // Redirect to categories page
     }
   }, [navigate, saveAuthData]);
 

@@ -94,7 +94,7 @@ export const DetailPenjualan = () => {
     >
       <Breadcrumb
         links={[
-          { path: '/kategori', label: 'Home' },
+          { path: '/dashboard', label: 'Home' },
           { path: '/penjualan', label: 'Penjualan' },
         ]}
       />

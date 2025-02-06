@@ -1,6 +1,8 @@
 import { CONFIG } from './Config';
 
 export const Endpoint = {
+  dashboard: `${CONFIG.API_URL}/dashboard`,
+  aktivitas: `${CONFIG.API_URL}/aktivitas`,
   login: `${CONFIG.API_URL}/user/login`,
   signup: `${CONFIG.API_URL}/user/signup`,
   profile: (id) => `${CONFIG.API_URL}/user/${id}`,
@@ -21,6 +23,7 @@ export const Endpoint = {
 
   historyPenjualan: `${CONFIG.API_URL}/historypenjualan`,
   historyPembelian: `${CONFIG.API_URL}/historypembelian`,
-
+  exportHistoryPenjualan: `${CONFIG.API_URL}/export/historypenjualan`,
+  exportHistoryPembelian: `${CONFIG.API_URL}/export/historypembelian`,
   auth: `${CONFIG.API_URL}/auth/google`,
 };
